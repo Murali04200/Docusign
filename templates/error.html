@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .error-container { max-width: 800px; margin: 0 auto; }
+        .error-message { color: #dc3545; background: #f8d7da; padding: 15px; border-radius: 4px; }
+        .stack-trace { margin-top: 20px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>An error occurred</h1>
+        <div class="error-message" th:if="${error}" th:text="${error}">Error message</div>
+        <div class="error-message" th:if="${message}" th:text="${message}"></div>
+        <div class="stack-trace" th:if="${trace}" th:text="${trace}"></div>
+    </div>
+</body>
+</html>

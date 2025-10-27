@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign in — Virtue Tech Corp (DocuSign Integration)</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+:root{--accent:#4f46e5}
+body {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url('https://wallpapers.com/images/hd/professional-background-4b31fgiuezafrguu.jpg') no-repeat center center / cover;
+  filter: blur(8px) brightness(0.9);
+  z-index: -1;
+}
+
+.header { position: sticky; top:0; z-index:40; backdrop-filter: blur(6px); }
+.brand { font-weight:700; letter-spacing:0.2px; }
+.hero { min-height:72vh; display:flex; align-items:center; justify-content:center; }
+.slide-full { height:72vh; border-radius:14px; overflow:hidden; box-shadow:0 12px 40px rgba(2,6,23,0.12); }
+.slide-full img { width:100%; height:100%; object-fit:cover; display:block; }
+.slide-overlay { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.08) 40%, rgba(0,0,0,0.28) 100%); }
+.slide-card-inner { position:relative; z-index:2; }
+.signin-wrap{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.signin-card { width:100%; max-width:100%; border-radius:14px; box-shadow:0 12px 40px rgba(2,6,23,0.12); overflow:hidden; display:flex; flex-direction:column; height:78vh; }
+.signin-card img { width:100%; height:65%; object-fit:cover; }
+.signin-card-content{ flex:1; display:flex; flex-direction:column; justify-between; padding:1.5rem; }
+.project-companies { margin-top:6rem; overflow:hidden; position:relative; }
+.company-card { width:120px; height:140px; background:white; border-radius:12px; margin-right:80px; display:inline-block; vertical-align:top; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,0.1); overflow:hidden; }
+.company-card img { width:100%; height:100px; object-fit:cover; border-bottom:1px solid #eee; }
+.company-track { white-space:nowrap; animation: slide-left 15s linear infinite; }
+@keyframes slide-left { 0% { transform:translateX(100%);} 100% { transform:translateX(-100%);} }
+@media (min-width:1024px){ .layout{ display:grid; grid-template-columns:1.7fr 0.9fr; gap:28px; align-items:start; } .slide-full{ height:78vh; } .signin-card{ position:relative; top:auto; } }
+</style>
+</head>
+<body class="font-sans text-gray-800">
+
+  <!-- HEADER (centered brand) -->
+  <header class="header bg-white bg-opacity-60 py-4">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <div class="brand text-2xl text-gray-900">Virtue Tech Corporation</div>
+      <div class="text-sm text-gray-500">Trusted e‑signature & workflow integrations</div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 layout">
+
+    <!-- LEFT: Large slideshow that visually covers the page width -->
+    <section>
+      <div class="hero">
+        <div class="relative w-full slide-full" id="carousel">
+
+          <!-- slides container -->
+          <div class="slides relative w-full h-full">
+            <div class="slide absolute inset-0" data-index="0">
+              <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=2000&q=60" alt="Speed" />
+              <div class="slide-overlay"></div>
+              <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                <h2 class="text-4xl font-bold">Speed up approvals</h2>
+                <p class="mt-3 text-lg">Reduce turnaround times with instant e-signatures and automated reminders.</p>
+              </div>
+            </div>
+
+            <div class="slide absolute inset-0 hidden" data-index="1">
+              <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?auto=format&fit=crop&w=2000&q=60" alt="Security" />
+              <div class="slide-overlay"></div>
+              <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                <h2 class="text-4xl font-bold">Enterprise-grade security</h2>
+                <p class="mt-3 text-lg">SSO, audit trails and encrypted storage to keep your data safe.</p>
+              </div>
+            </div>
+
+            <div class="slide absolute inset-0 hidden" data-index="2">
+              <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=2000&q=60" alt="Teams" />
+              <div class="slide-overlay"></div>
+              <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                <h2 class="text-4xl font-bold">Collaborative teams</h2>
+                <p class="mt-3 text-lg">Invite members, manage roles, and organize workflows effortlessly.</p>
+              </div>
+            </div>
+
+            <div class="slide absolute inset-0 hidden" data-index="3">
+              <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=2000&q=60" alt="Integration" />
+              <div class="slide-overlay"></div>
+              <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                <h2 class="text-4xl font-bold">Seamless integrations</h2>
+                <p class="mt-3 text-lg">Connect DocuSign, CRM and internal systems with one click.</p>
+              </div>
+            </div>
+
+            <div class="slide absolute inset-0 hidden" data-index="4">
+              <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=2000&q=60" alt="Analytics" />
+              <div class="slide-overlay"></div>
+              <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                <h2 class="text-4xl font-bold">Smart analytics</h2>
+                <p class="mt-3 text-lg">Monitor document flow and team performance with dashboards.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- dots -->
+          <div class="absolute left-0 right-0 bottom-6 flex justify-center space-x-2">
+            <div id="indicators" class="flex items-center space-x-2"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Why choose section & Our Vision cards in a row -->
+      <div class="mt-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-semibold">Why choose DocuSign?</h3>
+              <p class="text-gray-600 mt-2">Enterprise-ready signing built for teams: secure, auditable, and fast.</p>
+              <ul class="mt-3 text-sm text-gray-700 space-y-2">
+                <li>• Enterprise SSO and role-based access</li>
+                <li>• Fully audited e-signatures</li>
+                <li>• Pre-built DocuSign integrations</li>
+              </ul>
+            </div>
+            <div class="vision-card" style="transform:translateY(-6px);">
+              <h3 class="text-2xl font-semibold mb-2">Our Vision</h3>
+              <p class="text-gray-700 mb-4">To make agreements effortless: secure, fast, and fully auditable — empowering teams to focus on work that matters while we handle the paperwork.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <h4 class="font-semibold">Security</h4>
+                  <p class="text-sm text-gray-600">Zero-trust SSO, encrypted storage and tamper-proof audit trails.</p>
+                </div>
+                <div>
+                  <h4 class="font-semibold">Simplicity</h4>
+                  <p class="text-sm text-gray-600">Intuitive workflows that reduce time-to-sign and cut manual steps.</p>
+                </div>
+                <div>
+                  <h4 class="font-semibold">Scale</h4>
+                  <p class="text-sm text-gray-600">Enterprise-ready integrations for teams of any size and complexity.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Sign-in card and quick links (prominent, vertically centered) -->
+    <aside>
+      <div class="signin-wrap">
+        <div class="signin-card bg-white">
+          <img src="https://wallup.net/wp-content/uploads/2018/09/30/536996-3d-abstract-art-digital-creative-748x468.jpg" alt="Acme banner" />
+          <div class="signin-card-content">
+            <div>
+              <h3 class="text-lg font-semibold mb-2">Welcome to Docusign</h3>
+              <p class="text-sm text-gray-600 mb-4">Sign in with your corporate account to access DocuSign features integrated with Docusign's workspace.</p>
+            </div>
+            <a th:href="@{/oauth2/authorization/keycloak}" class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white" style="background:var(--accent);">
+              <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2z"/><path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4z"/></svg>
+              Login with DocuSign
+            </a>
+          </div>
+        </div>
+        <!-- About company card -->
+        <div class="mt-8 bg-white rounded-lg shadow overflow-hidden w-full">
+          <img src="https://media.gettyimages.com/id/1385970223/photo/great-idea-of-a-marketing-strategy-plan-at-a-creative-office.jpg?s=612x612&w=gi&k=20&c=6eNZA8XGYgYJmD1gS7oWmGxFF6BvmWtozndUAHkpF7M=" alt="Company" class="w-full h-40 object-cover" />
+          <div class="p-4">
+            <h4 class="text-lg font-semibold mb-2">Virtue Tech Corporation</h4>
+            <p class="text-sm text-gray-600 mb-8">Building secure, seamless DocuSign integrations that accelerate approvals and simplify agreement workflows.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <!-- Our project companies -->
+  <div class="project-companies mt-2">
+    <h3 class="text-xl font-semibold mb-4 text-center">Our Project Companies</h3>
+    <div class="company-track" aria-hidden="true">
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCQuxxAMGVlommRKvlqGKViNM6IoXsML2sRA&s" alt="Company 1" /><p>Walt Disney</p></div>
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTv1WDh01twWrVP3u3MGh3NQGY6FB59DRxzQ&s" alt="Company 2" /><p>Google</p></div>
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgS687f3_oBYxgIUElt_76gIyc4uqu9gsA1w&s" alt="Company 3" /><p>Amazon</p></div>
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6yBZgqmW2ulPkfjxQJetE7cTrbcFklZMgiQ&s" alt="Company 4" /><p>Wipro</p></div>
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7TRARHxaBdUFillqyi-6DrsnTBZuxiOicaQ&s" alt="Company 5" /><p>Dell</p></div>
+      <div class="company-card"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGVLRgQmVvLWm7_bkT5CbFnrV64qI3lnGBcw&s" alt="Company 6" /><p>Tencent</p></div>
+    </div>
+  </div>
+
+  <script>
+    // Full-width carousel simple implementation
+    (function(){
+      const slides = document.querySelectorAll('#carousel .slide');
+      const indicators = document.getElementById('indicators');
+      let idx = 0;
+      function createIndicators(){ slides.forEach((s,i)=>{ const b=document.createElement('button'); b.className='w-3 h-3 rounded-full bg-white bg-opacity-60'; b.addEventListener('click',()=>{ idx=i; show(idx); resetTimer(); }); indicators.appendChild(b); }); }
+      function updateIndicators(){ [...indicators.children].forEach((b,i)=> b.style.opacity=(i===idx?'1':'0.45')); }
+      function show(i){ slides.forEach(s=> s.classList.add('hidden')); slides[i].classList.remove('hidden'); updateIndicators(); }
+      let timer=null; function resetTimer(){ if(timer) clearInterval(timer); timer=setInterval(()=>{ idx=(idx+1)%slides.length; show(idx); },4500); }
+      createIndicators(); show(0); resetTimer();
+    })();
+  </script>
+
+</body>
+</html>

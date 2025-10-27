@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DocuSign Dashboard</title>
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-pQ1W8p3uH9vDOMkMt2rt7NmBGG99nmCaTKty+O+kO5OVwOB1p5MNDoAuCEi0aYawslZx0drfac+uHV5nEi7P9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <!-- Google Fonts - Inter -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <!-- CSRF Meta for Spring Security (Thymeleaf) -->
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+        <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+        <meta name="activeAccountId" th:content="${activeAccountId}">
+        <meta name="activeAccountName" th:content="${activeAccountName}">
+        <meta name="activeTeamCode" th:content="${activeTeamCode}">
+        <style>
+        :root {
+            --primary: #5b8cff;
+            --primary-dark: #3056d3;
+            --secondary: #8e9bb0;
+            --success: #22c55e;
+            --info: #06b6d4;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --nav-bg: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+            --nav-text: #e2e8f0;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --border-radius: 1rem;
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            --box-shadow: 0 10px 20px rgba(0,0,0,.08);
+            --box-shadow-lg: 0 30px 60px rgba(0,0,0,.18);
+        }
+
+        /* Ensure desktop layout always leaves space for sidebar */
+        @media (min-width: 992px) {
+            .main-content {
+                margin-left: var(--sidebar-width) !important;
+            }
+        }
+
+        body {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: hidden;
+        font-family: 'Inter', sans-serif;
+        }
+
+        body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: url('https://static.vecteezy.com/system/resources/thumbnails/019/155/428/small/colorful-gradient-abstract-background-colorful-pastel-design-vector.jpg') no-repeat center center / cover;
+        filter: blur(8px) brightness(0.9);
+        z-index: -1;
+        }
+
+
+        /* Layout */
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--nav-bg);
+            color: var(--nav-text);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar .logo {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .sidebar .logo i {
+            font-size: 1.5rem;
+        }
+
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+
+        .sidebar .nav-link {
+            color: var(--nav-text);
+            padding: 0.75rem 1.5rem;
+            margin: 0.25rem 0.5rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link i {
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        .sidebar .nav-link.logout {
+            color: #f56565;
+        }
+
+        .logout-link {
+            color: #ef4444 !important;
+            transition: all 0.2s ease;
+        }
+
+        .logout-link:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: #dc2626 !important;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background: linear-gradient(90deg, rgba(48,86,211,0.7), rgba(91,140,255,0.7));
+            backdrop-filter: blur(16px) saturate(140%);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--glass-shadow);
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 0.75rem;
+            pointer-events: none;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            color: var(--secondary);
+        }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-trigger:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            min-width: 200px;
+            z-index: 9999;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-option {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-option:hover {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .dropdown-option i {
+            width: 1.2rem;
+            text-align: center;
+        }
+
+        .dropdown-separator {
+            border-top: 1px solid #e5e7eb;
+            margin: 0.5rem 0;
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            margin-top: -1.75rem;
+            position: relative;
+            z-index: 5;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, rgba(18, 194, 233, 0.92), rgba(196, 113, 237, 0.9), rgba(246, 79, 89, 0.9)) !important;
+            border-radius: var(--border-radius);
+            padding: 1.75rem;
+            height: 100%;
+            border: none;
+            box-shadow: 0 24px 42px rgba(17, 24, 39, 0.22);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: #ffffff;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -25%;
+            width: 160%;
+            height: 220%;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.55), transparent 60%);
+            opacity: 0.85;
+            pointer-events: none;
+            transform: rotate(18deg);
+        }
+
+        .stats-card::after {
+            content: '';
+            position: absolute;
+            bottom: -35%;
+            right: -15%;
+            width: 130%;
+            height: 130%;
+            background: linear-gradient(125deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .stats-card .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.9rem;
+            color: #ffffff;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.35);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(4px);
+            background: linear-gradient(145deg, rgba(255,255,255,0.32), rgba(255,255,255,0.08));
+        }
+
+        .stats-card .icon.pending {
+            background: linear-gradient(140deg, rgba(255,255,255,0.45), rgba(13,110,253,0.35));
+            color: #0d6efd;
+        }
+
+        .stats-card .icon.completed {
+            background: linear-gradient(140deg, rgba(255,255,255,0.45), rgba(25,135,84,0.35));
+            color: #1fbf75;
+        }
+
+        .stats-card .icon.draft {
+            background: linear-gradient(140deg, rgba(255,255,255,0.45), rgba(255,193,7,0.35));
+            color: #ffd24d;
+        }
+
+        .stats-card h6 {
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 0.08em;
+        }
+
+        .stats-card h3 {
+            color: #ffffff;
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 8px 20px rgba(10, 12, 25, 0.45);
+        }
+
+        .stats-card p {
+            color: rgba(255,255,255,0.82);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 32px rgba(15, 23, 42, 0.3);
+        }
+
+        .stats-card:hover .icon {
+            transform: scale(1.08);
+        }
+
+        .stats-card .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.4em 0.75em;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: rgba(16, 24, 40, 0.85);
+        }
+
+        /* Action Cards */
+        .action-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+            margin: 0;
+            backdrop-filter: blur(8px);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            pointer-events: none;
+        }
+
+
+        .action-card .card-header {
+            padding: 1.5rem;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+
+        .action-card .card-body {
+            padding: 1.5rem 1.25rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background: transparent;
+        }
+        
+        .action-card .icon-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background: currentColor;
+            pointer-events: none;
+        }
+
+        .action-card .icon-wrapper i {
+            font-size: 1.4rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .action-card .icon-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 50%);
+            border-radius: 30px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-color: transparent;
+        }
+        
+        .action-card:hover .icon-wrapper i {
+            transform: scale(1.1) translateY(-3px) rotateY(15deg);
+            filter: brightness(1.1) drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+        }
+
+        .action-card .icon-wrapper.primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            color: white !important;
+        }
+
+        .action-card .icon-wrapper.success {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white !important;
+        }
+        
+
+        .action-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+            color: #1e293b;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .action-card p {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin: 0.25rem 0 0.75rem;
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .action-card .btn {
+            min-width: 120px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* Documents Table */
+        .documents-table {
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(8px) saturate(140%);
+        }
+
+        .documents-table .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .documents-table .table {
+            margin: 0;
+        }
+
+        .documents-table .table th {
+            background: #f8fafc;
+            border-bottom-width: 1px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 1rem 1.5rem;
+            white-space: nowrap;
+        }
+
+        .documents-table .table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .documents-table .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .empty-state {
+            padding: 2rem;
+        }
+
+        .btn-group .btn {
+            margin-right: 0.25rem;
+        }
+
+        .dropdown-menu.show {
+            display: block !important;
+            position: absolute;
+            z-index: 1000;
+        }
+
+        .documents-table .badge {
+            font-weight: 500;
+            padding: 0.4em 0.8em;
+            font-size: 0.75em;
+            border-radius: 50px;
+        }
+
+        .badge.bg-success {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            color: #198754 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+            color: #ffc107 !important;
+        }
+
+        .badge.bg-info {
+            background-color: rgba(13, 202, 240, 0.1) !important;
+            color: #0dcaf0 !important;
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 600;
+            padding: 0.6rem 1.25rem;
+            border-radius: 999px;
+            transition: transform 0.15s ease, box-shadow 0.25s ease;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary { background-image: linear-gradient(90deg, #3056d3, #5b8cff); border: none; box-shadow: 0 10px 20px rgba(91,140,255,0.25); }
+        .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 14px 28px rgba(91,140,255,0.35); }
+        .btn-outline-primary { border-color: #5b8cff; color: #c7d2fe; }
+        .btn-outline-primary:hover { background: #5b8cff; color: #0b1220; }
+
+        /* Responsive */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1050;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .welcome-banner {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .content {
+                padding: 1rem 0.75rem;
+            }
+            
+            .welcome-banner {
+                padding: 1.25rem;
+            }
+            
+            .welcome-banner h2 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+            
+            .documents-table .table th,
+            .documents-table .table td {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark);
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .menu-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        @media (max-width: 991.98px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        /* Utility Classes */
+        .text-primary {
+            color: var(--primary) !important;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        .shadow-sm {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+        }
+        /* Section spacing */
+        .section { margin-bottom: 2rem; }
+        /* Footer alignment when sidebar is fixed */
+        @media (min-width: 992px) {
+            .footer-info {
+                margin-left: var(--sidebar-width);
+                padding-right: 16px; /* keep space from right edge */
+                padding-left: 16px;  /* match left padding */
+                max-width: calc(100vw - var(--sidebar-width) - 16px);
+                overflow-x: hidden;
+            }
+        }
+        /* Glossy cards */
+        .glossy {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.55) 100%);
+            border: 1px solid rgba(255,255,255,0.35) !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            overflow: hidden;
+        }
+        .glossy:before {
+            content: "";
+            position: absolute;
+            top: -60%;
+            left: -60%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 60%);
+            pointer-events: none;
+            transform: rotate(15deg);
+        }
+        .glossy:hover {
+            box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+            transition: all .2s ease;
+        }
+        .glossy .card-header {
+            background: transparent !important;
+        }
+        
+        .stats-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-card .icon.pending {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        .stats-card .icon.completed {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .stats-card .icon.draft {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .stats-card h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stats-card p {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        /* Action Cards */
+        .action-card {
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .action-card .card-header {
+            padding: 1.25rem 1.5rem;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .action-card .card-body {
+            padding: 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .action-card .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .action-card .icon-wrapper.primary {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        .action-card .icon-wrapper.success {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .action-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-card p {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Documents Table */
+        .documents-table {
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .documents-table .table {
+            margin-bottom: 0;
+        }
+        
+        .documents-table .table th {
+            background: #f8f9fa;
+            border-bottom-width: 1px;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 1rem 1.5rem;
+        }
+        
+        .documents-table .table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            border-color: #f1f3f5;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+        }
+        
+        /* Responsive */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-row {
+                margin-top: 0;
+            }
+            
+            .menu-toggle {
+                display: block !important;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #495057;
+            margin-right: 1rem;
+        }
+
+        .navbar-brand-center {
+            font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="bi bi-file-earmark-lock-fill"></i>
+            <span>DocuSign</span>
+        </div>
+        <div class="nav flex-column">
+            <a href="#" class="nav-link active">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Agreement</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="bi bi-file-earmark-richtext"></i>
+                <span>Templates</span>
+            </a>
+            <a href="/groups" class="nav-link">
+                <i class="bi bi-people"></i>
+                <span>Groups</span>
+            </a>
+            <a href="/reports" class="nav-link">
+                <i class="bi bi-graph-up"></i>
+                <span>Reports</span>
+            </a>
+            <a href="/logout" class="nav-link logout" data-logout="true">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+    <div class="main-content">
+        <!-- Top Navigation Bar -->
+        <header class="sticky-top" style="z-index:1040;">
+          <nav class="navbar navbar-expand-lg shadow-sm" style="background: linear-gradient(90deg,#0d6efd,#6610f2);">
+            <div class="container-fluid py-2">
+              <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-light d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#workspaceModal">
+                  <i class="bi bi-hdd-network me-2"></i>
+                  <span>Workspace</span>
+                </button>
+              </div>
+
+              <div class="flex-grow-1 d-none d-sm-flex justify-content-center">
+                <span class="navbar-brand-center">DocuSign</span>
+              </div>
+
+              <div class="ms-auto d-flex align-items-center gap-2">
+                <!-- Notifications -->
+                <div class="dropdown me-2">
+                  <button class="btn btn-light btn-sm rounded-circle position-relative d-flex align-items-center justify-content-center" type="button" id="notifBtn" data-bs-toggle="dropdown" aria-expanded="false" style="width:34px;height:34px;">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" th:if="${notificationCount > 0}" th:text="${notificationCount > 9 ? '9+' : notificationCount}">0</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifBtn" style="min-width:320px; max-height:340px; overflow-y:auto;">
+                    <li class="dropdown-header small text-muted d-flex justify-content-between align-items-center">
+                      <span>Notifications</span>
+                      <span class="badge bg-primary" th:text="${notificationCount}">0</span>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li th:if="${#lists.isEmpty(notifications)}">
+                      <span class="dropdown-item small text-muted">No notifications yet</span>
+                    </li>
+                    <li th:each="n : ${notifications}">
+                      <div class="dropdown-item small">
+                        <div class="d-flex align-items-start">
+                          <div class="me-2">
+                            <i class="bi" th:classappend="${n.status} == 'accepted' ? ' bi-check-circle-fill text-success' : (${n.status} == 'completed' ? ' bi-send-check-fill text-primary' : ' bi-envelope-fill text-warning')"></i>
+                          </div>
+                          <div class="flex-grow-1">
+                            <div class="fw-semibold" th:text="${n.message}">Notification message</div>
+                            <div class="text-muted" th:text="${n.detail}" th:if="${n.detail != null}" style="font-size:0.75rem;"></div>
+                            <div class="text-muted" style="font-size:0.7rem;" th:text="${#temporals.format(n.timestamp, 'dd MMM yyyy, hh:mm a')}">Time</div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="dropdown">
+                  <button class="btn btn-light btn-sm rounded-pill d-flex align-items-center px-2 dropdown-toggle" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar me-2">
+                      <span th:text="${name != null ? #strings.toUpperCase(name.substring(0,1)) : 'U'}">U</span>
+                    </div>
+                    <span class="d-none d-md-inline fw-medium" th:text="${name != null ? name : username}">User</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuBtn">
+                    <li class="px-3 py-2">
+                      <div class="fw-semibold" th:text="${name != null ? name : username}">User Name</div>
+                      <div class="small text-muted">Account ID: <code th:text="${profileAccountCode}">ABC12345</code></div>
+                      <div class="small text-muted">Team Code: <code th:text="${activeTeamCode}">TEAM-CODE</code></div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item text-danger" href="/logout" data-logout="true">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </header>
+        <!-- Spacer so content doesn't hide under glassy header on some browsers -->
+        <div style="height: 60px;"></div>
+
+        <!-- Profile Modal -->
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content border-0 shadow-lg">
+              <div class="modal-header border-0">
+                <h6 class="modal-title" id="profileModalLabel">Profile</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body pt-0">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="avatar me-3">
+                    <span th:text="${name != null ? #strings.toUpperCase(name.substring(0,1)) : 'U'}">U</span>
+                  </div>
+                  <div>
+                    <div class="fw-semibold" th:text="${name != null ? name : username}">User Name</div>
+                    <div class="text-muted small" th:text="${email}">user@example.com</div>
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <a href="/logout" class="btn btn-danger" data-logout="true">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+            <div class="content container py-3">
+            <!-- Stats Cards Row -->
+            <div class="row g-4 mb-4 section">
+                <!-- Pending Documents Card -->
+                <div class="col-md-4">
+                    <div class="stats-card glossy animate__animated animate__fadeInUp">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-uppercase text-muted small mb-2">Pending</h6>
+                                <h3 class="mb-0" th:text="${pendingCount}">0</h3>
+                            </div>
+                            <div class="icon pending animate__animated animate__pulse animate__delay-1s animate__repeat-2">
+                                <i class="bi bi-clock fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-warning bg-opacity-10 text-warning">Action Required</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed Documents Card -->
+                <div class="col-md-4">
+                    <div class="stats-card glossy animate__animated animate__fadeInUp animate__delay-1s">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-uppercase text-muted small mb-2">Completed</h6>
+                                <h3 class="mb-0" th:text="${completedCount}">0</h3>
+                            </div>
+                            <div class="icon completed animate__animated animate__pulse animate__delay-2s animate__repeat-2">
+                                <i class="bi bi-check-circle fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-success bg-opacity-10 text-success">Signed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Draft Documents Card -->
+                <div class="col-md-4">
+                    <div class="stats-card glossy animate__animated animate__fadeInUp animate__delay-2s">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-uppercase text-muted small mb-2">Drafts</h6>
+                                <h3 class="mb-0" th:text="${draftCount}">0</h3>
+                            </div>
+                            <div class="icon draft animate__animated animate__pulse animate__delay-3s animate__repeat-2">
+                                <i class="bi bi-file-earmark-text fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-info bg-opacity-10 text-info">In Progress</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+ <div class="row g-4 mb-4" style="overflow-x: hidden;">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom-0 py-3">
+                            <h5 class="mb-0 fw-semibold">Sign or Get Signature</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm glossy animate__animated animate__fadeInUp">
+                                        <img src="https://cms-artifacts.motionarray.com/content/motion-array/1646834/Very_Confidential_And_Secret_Documents_high_resolution_preview_1646834.jpg?Expires=2074677773&Key-Pair-Id=K2ZDLYDZI2R1DF&Signature=qRYXw0eIrybkUmdKHICOfhXvinj3VwQfaYyDvqfebkeiQBr~Hxg11r389C-wqmp3jGVoPBRU8iuTIdW2F5qdoCnlu1TrkUeuXhtC82hXp-nJD8Ju0uLijW-ySF4XHKF6fJzOyHNswTF8wHuxS4Z39GylUQqjax2bRxS6cOeaU9YZzfPyqfhoSiJbgCpF~WaEyy8oj4B2yYivBeQJ11SpPOdlWUrbos421uLk6raNbZ859Tvm7Ux-6dYvv9Pxjma6GSr4VUX2TaXDiK~fFpfHE5a7dYwZZxutFrCT20LiMuRfj1Hqr0PHR~vbsWC3afvSHKN1eHcvbHeFEzyoAvmPtg__" class="card-img-top" alt="Sign a Document" style="object-fit: cover; height: 200px;">
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="fw-semibold mb-1">Sign a Document</h6>
+                                            <p class="text-muted small mb-3">Upload and sign a document yourself</p>
+                                            <div class="mt-auto d-grid">
+                                                <a href="/sign" class="btn btn-primary btn-sm">Sign Now</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm glossy animate__animated animate__fadeInUp animate__delay-1s">
+                                        <img src="https://c4.wallpaperflare.com/wallpaper/657/137/89/work-finance-documents-office-wallpaper-thumb.jpg" class="card-img-top" alt="Get Signature" style="object-fit: cover; height: 200px;">
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="fw-semibold mb-1">Get Signature</h6>
+                                            <p class="text-muted small mb-3">Send to others to collect signatures</p>
+                                            <div class="mt-auto d-grid">
+                                                <a href="/send-signature" class="btn btn-outline-primary btn-sm">Start Request</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm overflow-hidden">
+                        <div class="card-body p-0">
+                            <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators" id="promoIndicators">
+                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+                                </div>
+                                <div class="carousel-inner" id="promoSlides">
+                                  <div class="carousel-item active position-relative">
+                                    <img src="https://wallpapers.com/images/hd/brief-journaling-routine-wvp1u155gkrhd0rg.jpg" class="d-block w-100" alt="Slide 1" style="max-height:400px;object-fit:cover;">
+                                    <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                                      <h2 class="text-4xl font-bold">Speed up approvals</h2>
+                                      <p class="mt-3 text-lg">Reduce turnaround times with instant e-signatures and automated reminders.</p>
+                                    </div>
+                                  </div>
+                                  <div class="carousel-item position-relative">
+                                    <img src="https://cdn.wallpapersafari.com/52/60/Cfq2dv.jpg" class="d-block w-100" alt="Slide 2" style="max-height:400px;object-fit:cover;">
+                                    <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                                      <h2 class="text-4xl font-bold">Enterprise-grade security</h2>
+                                      <p class="mt-3 text-lg">SSO, audit trails and encrypted storage to keep your data safe.</p>
+                                    </div>
+                                  </div>
+                                  <div class="carousel-item position-relative">
+                                    <img src="https://thumbs.dreamstime.com/z/remote-team-collaboration-displayed-colorful-circular-layout-showcasing-diverse-members-engaging-virtual-meetings-features-377270725.jpg" class="d-block w-100" alt="Slide 3" style="max-height:400px;object-fit:cover;">
+                                    <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                                      <h2 class="text-4xl font-bold">Collaborative teams</h2>
+                                      <p class="mt-3 text-lg">Invite members, manage roles, and organize workflows effortlessly.</p>
+                                    </div>
+                                  </div>
+                                  <div class="carousel-item position-relative">
+                                    <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?cs=srgb&dl=pexels-fauxels-3184291.jpg&fm=jpg" class="d-block w-100" alt="Slide 4" style="max-height:400px;object-fit:cover;">
+                                    <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                                      <h2 class="text-4xl font-bold">Seamless integrations</h2>
+                                      <p class="mt-3 text-lg">Connect DocuSign, CRM and internal systems with one click.</p>
+                                    </div>
+                                  </div>
+                                  <div class="carousel-item position-relative">
+                                    <img src="https://thumbs.dreamstime.com/z/computer-circuitry-showcasing-intricate-design-functionality-331704469.jpg" class="d-block w-100" alt="Slide 5" style="max-height:400px;object-fit:cover;">
+                                    <div class="slide-card-inner p-10 text-white" style="position:absolute; left:40px; bottom:36px; max-width:720px;">
+                                      <h2 class="text-4xl font-bold">Smart analytics</h2>
+                                      <p class="mt-3 text-lg">Monitor document flow and team performance with dashboards.</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions (below slideshow) -->
+            <div class="row g-4 mb-4" style="overflow-x: hidden;">
+                <div class="col-md-4">
+                    <div class="card action-card h-100 glossy">
+                        <div class="card-header d-flex align-items-center">
+                            <div class="icon-wrapper success me-3"><i class="bi bi-people"></i></div>
+                            <div>
+                                <h5 class="mb-0">View Groups</h5>
+                                <small class="text-muted">See your teams and members</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <a href="/groups" class="btn btn-sm btn-outline-primary">Open Groups</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card action-card h-100">
+                        <div class="card-header d-flex align-items-center">
+                            <div class="icon-wrapper primary me-3"><i class="bi bi-upload"></i></div>
+                            <div>
+                                <h5 class="mb-0">Upload Document</h5>
+                                <small class="text-muted">Add files to your workspace</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <a href="#" class="btn btn-sm btn-primary">Upload</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card action-card h-100">
+                        <div class="card-header d-flex align-items-center">
+                            <div class="icon-wrapper me-3" style="background: rgba(108,117,125,.1); color:#6c757d;"><i class="bi bi-file-earmark-text"></i></div>
+                            <div>
+                                <h5 class="mb-0">Create Template</h5>
+                                <small class="text-muted">Build reusable docs</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <a href="#" class="btn btn-sm btn-outline-secondary">Coming soon</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Membership Overview -->
+            <div class="row mb-4" th:if="${teamAccounts != null and !#lists.isEmpty(teamAccounts)}">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header d-flex align-items-center justify-content-between bg-white">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-3" style="background: rgba(13,110,253,.1); color:#0d6efd;">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0 fw-semibold">Your Teams &amp; Members</h5>
+                                    <small class="text-muted">Track who belongs to each workspace you manage</small>
+                                </div>
+                            </div>
+                            <a href="/groups" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-people me-1"></i>Manage Groups
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-xl-4 col-lg-6" th:each="team : ${teamAccounts}">
+                                    <div class="card h-100 border shadow-sm">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                                            <div>
+                                                <h6 class="mb-0" th:text="${team.name}">Team Name</h6>
+                                                <small class="text-muted">Team ID: <span th:text="${team.id}">0</span></small>
+                                            </div>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary" th:text="${team.ownerDisplayName != null ? team.ownerDisplayName : 'member'}">member</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <th:block th:with="members=${teamMemberDetails[team.id]}">
+                                                <div class="list-group list-group-flush" th:if="${members != null and !members.isEmpty()}">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-start" th:each="member : ${members}">
+                                                        <div>
+                                                            <div class="fw-semibold" th:text="${member.displayName != null && !#strings.isEmpty(member.displayName) ? member.displayName : member.email}">Member Name</div>
+                                                            <div class="text-muted small" th:text="${member.email}">member@example.com</div>
+                                                        </div>
+                                                        <span class="badge bg-secondary-subtle text-capitalize" th:text="${member.role != null ? member.role : 'member'}">member</span>
+                                                    </div>
+                                                </div>
+                                                <div class="p-4 text-center text-muted" th:if="${members == null || members.isEmpty()}">
+                                                    <i class="bi bi-person-plus mb-2 d-block fs-3"></i>
+                                                    <span>No members added yet.</span>
+                                                </div>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invite Card -->
+            <div class="row mb-4 section">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper success me-3">
+                                    <i class="bi bi-person-plus fs-5"></i>
+                                </div>
+                                <h5 class="mb-0 fw-semibold">Invite Team Members</h5>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-envelope-plus me-2"></i>Invite
+                            </button>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-muted mb-2">Invite team members to collaborate on documents and templates.</p>
+                            <div th:if="${message}" class="alert alert-success py-2 px-3 mb-3" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span th:text="${message}">Invite sent successfully.</span>
+                            </div>
+
+                            <form class="invite-form" method="post" action="/invite/create">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <input type="hidden" name="accountId" id="inlineInviteAccountId" th:value="${activeAccountId}">
+                                <div class="row g-3">
+                                    <!-- Team Name (readonly) -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-medium text-dark">Team Name</label>
+                                        <input type="text" id="inlineInviteTeamName" class="form-control" placeholder="Auto-selected" readonly th:value="${activeAccountName}">
+                                    </div>
+
+                                    <!-- Team ID (readonly) -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-medium text-dark">Team ID</label>
+                                        <input type="text" id="inlineInviteTeamIdDisplay" class="form-control" placeholder="Auto-filled" readonly th:value="${activeAccountId}">
+                                    </div>
+
+                                    <!-- Name Field -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-medium text-dark">Full Name</label>
+                                        <input type="text" name="fullName" class="form-control" placeholder="Enter full name" required>
+                                    </div>
+
+                                    <!-- Email Field -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-medium text-dark">Email Address</label>
+                                        <input type="email" name="email" class="form-control" placeholder="Enter email address" required>
+                                    </div>
+
+                                    <!-- Role Field -->
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-medium text-dark">Role</label>
+                                        <select class="form-select" name="role" required>
+                                            <option value="">Select role</option>
+                                            <option value="Admin">Admin</option>
+                                            <option value="Member">Member</option>
+                                            <option value="Viewer">Viewer</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Account Field (target group) -->
+                                    <div class="col-md-3" th:if="${myAccounts != null and !#lists.isEmpty(myAccounts)}">
+                                        <label class="form-label fw-medium text-dark">Account</label>
+                                        <select class="form-select" name="accountId" required>
+                                            <option th:each="acc : ${myAccounts}" th:value="${acc.id}" th:text="${acc.name}"></option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Send Button -->
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        <button class="btn btn-primary w-100" type="submit">
+                                            <i class="bi bi-send me-2"></i>Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <script>
+                              (function(){
+                                try {
+                                  document.addEventListener('DOMContentLoaded', function(){
+                                    var form = document.querySelector('.invite-form');
+                                    if (!form) return;
+                                    var wsSelect = document.querySelector('select[name="accountId"]');
+                                    var hid = document.getElementById('inlineInviteAccountId');
+                                    var teamName = document.getElementById('inlineInviteTeamName');
+                                    var teamIdDisp = document.getElementById('inlineInviteTeamIdDisplay');
+                                    function syncFromSelect(){
+                                      if (wsSelect && wsSelect.value) {
+                                        hid.value = wsSelect.value;
+                                        var opt = wsSelect.options[wsSelect.selectedIndex];
+                                        teamName.value = opt ? opt.text : '';
+                                        teamIdDisp.value = wsSelect.value;
+                                      } else {
+                                        var metaId = document.querySelector('meta[name="activeAccountId"]');
+                                        var metaName = document.querySelector('meta[name="activeAccountName"]');
+                                        var idVal = metaId ? metaId.getAttribute('content') : '';
+                                        var nameVal = metaName ? metaName.getAttribute('content') : '';
+                                        hid.value = idVal || '';
+                                        teamIdDisp.value = idVal || '';
+                                        teamName.value = nameVal || '';
+                                      }
+                                    }
+                                    // If a select exists, auto-select the option matching activeAccountId meta
+                                    try {
+                                      if (wsSelect) {
+                                        var metaId = document.querySelector('meta[name="activeAccountId"]');
+                                        var activeId = metaId ? metaId.getAttribute('content') : null;
+                                        if (activeId) {
+                                          for (var i = 0; i < wsSelect.options.length; i++) {
+                                            if (wsSelect.options[i].value === activeId) {
+                                              wsSelect.selectedIndex = i;
+                                              break;
+                                            }
+                                          }
+                                        }
+                                      }
+                                    } catch(e) { /* no-op */ }
+                                    syncFromSelect();
+                                    if (wsSelect) wsSelect.addEventListener('change', syncFromSelect);
+                                  });
+                                } catch(e) { /* no-op */ }
+                              })();
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- Container for dashboard sections -->
+            <div class="container section">
+                <!-- Recent Documents -->
+                <div class="card documents-table">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Completed Documents</h5>
+                        <a href="#" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Status</th>
+                                <th>Completed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${completedCount > 0}">
+                            <tr th:each="doc : ${recentDocuments}" th:if="${doc.status == 'COMPLETED'}">
+                                <td th:text="${doc.name}">Document Name</td>
+                                <td>
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        <span th:text="${#strings.capitalize(doc.status.toLowerCase())}">Completed</span>
+                                    </span>
+                                </td>
+                                <td th:text="${doc.lastModified}">Date</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="${doc.viewUrl}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </a>
+                                        <a th:href="${doc.downloadUrl}"
+                                           class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-download me-1"></i>Download
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${completedCount == 0}">
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="empty-state">
+                                        <i class="bi bi-check-circle fs-1 text-muted mb-3"></i>
+                                        <h6 class="text-muted">No completed documents yet</h6>
+                                        <p class="text-muted small">Completed documents will appear here once they are finished.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Workspace Switch Modal -->
+    <div class="modal fade" id="workspaceModal" tabindex="-1" aria-labelledby="workspaceModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header border-0">
+            <h6 class="modal-title" id="workspaceModalLabel">Switch Workspace</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-0">
+            <form method="post" action="/workspace/switch">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <div class="mb-3">
+                <label class="form-label">Select Workspace</label>
+                <select class="form-select" name="accountId" required>
+                  <optgroup label="Personal" th:if="${personalAccount != null}">
+                    <option th:value="${personalAccount.id}"
+                            th:text="${'Personal Account'}"
+                            th:selected="${activeAccountId != null} ? (personalAccount.id == activeAccountId) : false">
+                    </option>
+                  </optgroup>
+                  <optgroup label="Teams" th:if="${teamAccounts != null and !#lists.isEmpty(teamAccounts)}">
+                    <option th:each="acc : ${teamAccounts}"
+                            th:value="${acc.id}"
+                            th:text="${acc.name}"
+                            th:selected="${activeAccountId != null} ? (acc.id == activeAccountId) : false">
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Switch</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer info card -->
+    <div class="container section footer-info">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="row g-4 align-items-center">
+            <div class="col-md-8">
+              <h5 class="mb-1">Work smarter with DocuSign</h5>
+              <p class="text-muted mb-2">Send, sign, and manage agreements faster with secure, legally-binding eSignatures.</p>
+              <div class="d-flex flex-wrap gap-3 small">
+                <span class="badge bg-light text-dark"><i class="bi bi-shield-check me-1"></i>Secure</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-lightning-charge me-1"></i>Fast</span>
+                <span class="badge bg-light text-dark"><i class="bi bi-people me-1"></i>Collaborative</span>
+              </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <a href="#" class="btn btn-primary me-2">Explore Features</a>
+              <a href="#" class="btn btn-outline-secondary">Learn More</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden logout form to ensure POST with CSRF -->
+    <form id="logoutForm" method="post" action="/logout" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    </form>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Ensure main content is not hidden behind sidebar
+  (function(){
+    function layoutSidebar(){
+      try {
+        const sidebar = document.querySelector('.sidebar');
+        const main = document.querySelector('.main-content');
+        if (!sidebar || !main) return;
+        const rect = sidebar.getBoundingClientRect();
+        const hidden = (sidebar.offsetParent === null) || rect.width === 0;
+        if (window.innerWidth >= 992 && !hidden) {
+          // desktop: give main area a left margin equal to sidebar width
+          main.style.marginLeft = rect.width + 'px';
+        } else {
+          // mobile or hidden sidebar
+          main.style.marginLeft = '0';
+        }
+      } catch(e) {}
+    }
+    window.addEventListener('resize', layoutSidebar);
+    document.addEventListener('DOMContentLoaded', layoutSidebar);
+    // Recompute after sidebar toggle clicks
+    const toggle = document.getElementById('sidebarToggle');
+    if (toggle) toggle.addEventListener('click', function(){ setTimeout(layoutSidebar, 200); });
+    
+    // Initial run
+    layoutSidebar();
+  })();
+</script>
+<script>
+  // Toggle sidebar on mobile (guard against missing elements)
+  (function() {
+      const menuToggle = document.querySelector('.menu-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      const contentEl = document.querySelector('.content');
+      if (menuToggle && sidebar) {
+          menuToggle.addEventListener('click', function() {
+              sidebar.classList.toggle('show');
+              if (contentEl) contentEl.classList.toggle('expand');
+          });
+      }
+  })();
+</script>
+<script>
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const contentEl = document.querySelector('.content');
+            if (!sidebar || !menuToggle) return;
+            if (window.innerWidth < 992 &&
+                !sidebar.contains(event.target) &&
+                !menuToggle.contains(event.target)) {
+                sidebar.classList.remove('show');
+                if (contentEl) contentEl.classList.remove('expand');
+            }
+        });
+
+        // Bootstrap handles dropdowns via data attributes; no custom dropdown scripts needed
+
+        // Simple logout function that works with Spring Security
+        function performLogout() {
+            console.log('Logout initiated');
+            
+            // Show confirmation dialog
+            if (!confirm('Are you sure you want to sign out?')) {
+                console.log('User cancelled logout');
+                return;
+            }
+            
+            console.log('User confirmed logout');
+            
+            // Submit the hidden logout form if available, else fallback to dynamic form
+            const existing = document.getElementById('logoutForm');
+            if (existing) {
+                existing.submit();
+                return;
+            }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            form.style.display = 'none';
+            const csrfToken = document.querySelector('meta[name="_csrf"]');
+            const csrfParam = document.querySelector('meta[name="_csrf_parameter"]');
+            if (csrfToken) {
+                const token = document.createElement('input');
+                token.type = 'hidden';
+                token.name = csrfParam ? csrfParam.content : '_csrf';
+                token.value = csrfToken.content;
+                form.appendChild(token);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Backward-compatibility wrappers (if referenced elsewhere)
+        function performHeaderLogout() { performLogout(); }
+        function performSidebarLogout() { performLogout(); }
+
+        // Set up event listeners for all logout buttons/links
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all logout buttons/links and attach the handler
+            const logoutElements = document.querySelectorAll('[data-logout="true"]');
+            logoutElements.forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    performLogout();
+                });
+            });
+        });
+    </script>
+    <!-- Invite Modal Fragment -->
+    <div th:replace="fragments/invite-modal :: invite-modal"></div>
+    <script>
+      // Fallback: ensure clicking the header user button opens the profile modal
+      (function(){
+        try {
+          document.addEventListener('DOMContentLoaded', function(){
+            const btn = document.querySelector('[data-bs-target="#profileModal"]');
+            const modalEl = document.getElementById('profileModal');
+            if (!btn || !modalEl) return;
+            btn.addEventListener('click', function(){
+              // If Bootstrap is available use it
+              if (window.bootstrap && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                return;
+              }
+              // Very basic manual show fallback
+              modalEl.style.display = 'block';
+              modalEl.classList.add('show');
+              const backdrop = document.createElement('div');
+              backdrop.className = 'modal-backdrop fade show';
+              document.body.appendChild(backdrop);
+              // Close on click of any [data-bs-dismiss="modal"]
+              modalEl.querySelectorAll('[data-bs-dismiss="modal"]').forEach(function(closeBtn){
+                closeBtn.addEventListener('click', function(){
+                  modalEl.classList.remove('show');
+                  modalEl.style.display = 'none';
+                  if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+                });
+              });
+            });
+          });
+        } catch(e) { /* no-op */ }
+      })();
+    </script>
+    <script>
+      // Bootstrap dropdown fallback init for user menu
+      (function(){
+        try {
+          document.addEventListener('DOMContentLoaded', function(){
+            if (window.bootstrap && document.getElementById('userMenuBtn')) {
+              new bootstrap.Dropdown(document.getElementById('userMenuBtn'));
+            }
+          });
+        } catch(e) { /* no-op */ }
+      })();
+    </script>
+    <!-- Role-based UI gating: hide elements whose data-required-roles doesn't include activeRole -->
+    <script th:inline="javascript">
+      (function(){
+        try {
+          var activeRole = /*[[${activeRole}]]*/ null;
+          if (!activeRole) return;
+          var roleStr = String(activeRole).toUpperCase();
+          document.querySelectorAll('[data-required-roles]').forEach(function(el){
+            var req = (el.getAttribute('data-required-roles') || '').split(',').map(function(s){ return s.trim().toUpperCase(); });
+            if (req.length && req.indexOf(roleStr) === -1) {
+              el.style.display = 'none';
+            }
+          });
+        } catch(e) { /* no-op */ }
+      })();
+    </script>

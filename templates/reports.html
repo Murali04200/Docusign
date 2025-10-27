@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <a href="/dashboard" class="btn btn-outline-secondary me-2">Back</a>
+    <h4 class="mb-0">Invite Reports</h4>
+  </div>
+
+  <div th:if="${#lists.isEmpty(invites)}" class="alert alert-info">No invites yet.</div>
+
+  <div class="table-responsive" th:if="${!#lists.isEmpty(invites)}">
+    <table class="table table-striped align-middle">
+      <thead>
+      <tr>
+        <th>Invited Person</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Team (Account ID)</th>
+        <th>Invited At</th>
+        <th>Status</th>
+        <th>Accepted At</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="inv : ${invites}">
+        <td th:text="${inv.fullName}">Name</td>
+        <td th:text="${inv.email}">email@example.com</td>
+        <td th:text="${inv.role}">ROLE</td>
+        <td th:text="${inv.accountId}">123</td>
+        <td th:text="${#temporals.format(inv.createdAt, 'yyyy-MM-dd HH:mm')}">date</td>
+        <td>
+          <span class="badge" th:classappend="${inv.used} ? ' bg-success' : ' bg-secondary'"
+                th:text="${inv.used} ? 'Accepted' : 'Pending'">Status</span>
+        </td>
+        <td th:text="${inv.acceptedAt != null ? #temporals.format(inv.acceptedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

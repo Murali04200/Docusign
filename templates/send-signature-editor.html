@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prepare Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+  <style>
+    body { background: #f8fafc; }
+    .editor { display: flex; gap: 1rem; }
+    .tools { width: 280px; }
+    .canvas { flex: 1; background: #eef2f7; border-radius: .5rem; padding: 1rem; overflow: auto; }
+    .page { position: relative; margin: 0 auto 1rem; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .field { position: absolute; padding: 6px 10px; border: 2px dashed #2563eb; border-radius: .25rem; background: rgba(37,99,235,.08); cursor: move; user-select: none; }
+    .field .label { font-size: .8rem; color: #1f2937; }
+    .tool-item { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border: 1px solid #e5e7eb; border-radius: .5rem; background: #fff; cursor: grab; }
+    .tool-item i { width: 1.25rem; text-align: center; }
+    .ghost { opacity: .6; }
+    .recipient-select { width: 100%; }
+  </style>
+</head>
+<body>
+<div class="container-fluid p-3">
+  <div class="d-flex align-items-center mb-3">
+    <a th:href="@{'/send-signature'(back=${envId})}" class="btn btn-outline-secondary me-2"><i class="bi bi-arrow-left"></i></a>
+    <h4 class="mb-0">Prepare Document</h4>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span class="text-muted small" th:text="${fileName}">document.pdf</span>
+      <button class="btn btn-success" id="sendBtn"><i class="bi bi-send me-1"></i>Send</button>
+    </div>
+  </div>
+  <div class="row editor">
+    <div class="col-auto tools">
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-white"><strong>Recipients</strong></div>
+        <div class="card-body">
+          <select id="recipientPicker" class="form-select recipient-select" th:if="${recipients != null}" >
+            <option th:each="r: ${recipients}" th:value="${r.email}" th:text="${r.name + ' <' + r.email + '>'}"></option>
+          </select>
+          <div class="text-muted small" th:if="${recipients == null}">No recipients</div>
+        </div>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-header bg-white"><strong>Fields</strong></div>
+        <div class="card-body d-grid gap-2">
+          <div class="tool-item" draggable="true" data-type="SIGNATURE"><i class="bi bi-brush"></i> Signature</div>
+          <div class="tool-item" draggable="true" data-type="INITIALS"><i class="bi bi-type"></i> Initials</div>
+          <div class="tool-item" draggable="true" data-type="FULL_NAME"><i class="bi bi-person"></i> Name</div>
+          <div class="tool-item" draggable="true" data-type="TEXT"><i class="bi bi-input-cursor-text"></i> Text</div>
+          <div class="tool-item" draggable="true" data-type="DATE"><i class="bi bi-calendar3"></i> Date</div>
+          <div class="tool-item" draggable="true" data-type="CHECKBOX"><i class="bi bi-check2-square"></i> Checkbox</div>
+          <div class="tool-item" draggable="true" data-type="DROPDOWN"><i class="bi bi-caret-down-square"></i> Dropdown</div>
+          <div class="tool-item" draggable="true" data-type="RADIO_GROUP"><i class="bi bi-ui-radios"></i> Radio Group</div>
+        </div>
+      </div>
+    </div>
+    <div class="col canvas">
+      <div id="pages"></div>
+    </div>
+  </div>
+</div>
+
+<form id="sendForm" method="post" action="/send-signature/send" style="display:none;">
+  <input type="hidden" name="id" th:value="${envId}" />
+  <input type="hidden" name="placements" id="placementsInput" />
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"></script>
+<script>
+  const envId = "[[${envId}]]";
+  const pagesEl = document.getElementById('pages');
+  const placements = []; // {page, x, y, w, h, type, recipient, options?}
+  const recipientColors = {};
+  (function assignRecipientColors(){
+    const palette = ['#2563eb','#16a34a','#db2777','#0ea5e9','#f59e0b','#7c3aed','#ef4444'];
+    const sel = document.getElementById('recipientPicker');
+    if (!sel) return;
+    Array.from(sel.options).forEach((opt, idx) => {
+      recipientColors[opt.value] = palette[idx % palette.length];
+    });
+  })();
+
+  // Load PDF into canvases
+  (async function loadPdf(){
+    const url = `/send-signature/file?id=${encodeURIComponent(envId)}`;
+    try {
+      const pdf = await pdfjsLib.getDocument(url).promise;
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.2 });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.className = 'page';
+        pagesEl.appendChild(canvas);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        attachDrop(canvas, i);
+      }
+    } catch (e) {
+      // Fallback: render a placeholder page if not a PDF
+      const holder = document.createElement('div');
+      holder.className = 'page';
+      holder.style.width = '800px';
+      holder.style.height = '1100px';
+      holder.style.display = 'flex';
+      holder.style.alignItems = 'center';
+      holder.style.justifyContent = 'center';
+      holder.textContent = 'Preview not available. You can still place fields.';
+      pagesEl.appendChild(holder);
+      attachDrop(holder, 1);
+    }
+  })();
+
+  // Drag from tools to page
+  document.querySelectorAll('.tool-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', item.getAttribute('data-type'));
+      item.classList.add('ghost');
+    });
+    item.addEventListener('dragend', () => item.classList.remove('ghost'));
+  });
+
+  function attachDrop(pageEl, pageNumber) {
+    pageEl.addEventListener('dragover', e => { e.preventDefault(); });
+    pageEl.addEventListener('drop', e => {
+      e.preventDefault();
+      const type = e.dataTransfer.getData('text/plain');
+      const rect = pageEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      addField(pageEl, pageNumber, x, y, type);
+    });
+  }
+
+  function addField(pageEl, page, x, y, type) {
+    const field = document.createElement('div');
+    field.className = 'field';
+    field.style.left = (x - 60) + 'px';
+    field.style.top = (y - 18) + 'px';
+    field.style.width = '120px';
+    field.style.height = '36px';
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    field.appendChild(label);
+
+    // Assign recipient
+    const recSel = document.getElementById('recipientPicker');
+    const recipient = recSel && recSel.value ? recSel.value : '';
+    const color = recipientColors[recipient] || '#2563eb';
+    field.style.borderColor = color;
+    field.style.background = hexToRgba(color, 0.08);
+
+    // Save placement record
+    const rec = { page, x: x, y: y, w: 120, h: 36, type, recipient };
+
+    // For configured tools, prompt for options
+    if (type === 'DROPDOWN') {
+      const opts = prompt('Enter dropdown options separated by commas:', 'Option 1, Option 2, Option 3');
+      if (opts) {
+        rec.options = opts.split(',').map(s => s.trim()).filter(Boolean);
+        label.textContent = `${type} (${rec.options.length})`;
+      }
+    } else if (type === 'RADIO_GROUP') {
+      const opts = prompt('Enter radio options separated by commas:', 'Yes, No');
+      if (opts) {
+        rec.options = opts.split(',').map(s => s.trim()).filter(Boolean);
+        label.textContent = `${type} (${rec.options.length})`;
+      }
+    } else if (type === 'INITIALS') {
+      const opts = prompt('Enter initials (comma separated):', 'First, Last');
+      if (opts) {
+        rec.options = opts.split(',').map(s => s.trim()).filter(Boolean);
+        label.textContent = `${type} (${rec.options.length})`;
+      }
+    }
+
+    placements.push(rec);
+
+    makeDraggable(field, rec, pageEl);
+    pageEl.appendChild(field);
+
+    // Allow re-configuring options on double-click
+    field.addEventListener('dblclick', () => {
+      if (rec.type === 'DROPDOWN' || rec.type === 'RADIO_GROUP' || rec.type === 'INITIALS') {
+        const current = (rec.options || []).join(', ');
+        const opts = prompt('Edit options (comma separated):', current);
+        if (opts !== null) {
+          rec.options = opts.split(',').map(s => s.trim()).filter(Boolean);
+          label.textContent = `${rec.type} (${rec.options.length})`;
+        }
+      }
+    });
+  }
+
+  function makeDraggable(el, rec, container) {
+    let dragging = false, startX=0, startY=0, origX=0, origY=0;
+    el.addEventListener('mousedown', e => {
+      const r = el.getBoundingClientRect();
+      origX = r.left - container.getBoundingClientRect().left;
+      origY = r.top - container.getBoundingClientRect().top;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!dragging) return; 
+      const dx = e.clientX - startX; const dy = e.clientY - startY;
+      const nx = origX + dx; const ny = origY + dy;
+      el.style.left = nx + 'px';
+      el.style.top = ny + 'px';
+      rec.x = nx + 60; // keep same anchor as creation
+      rec.y = ny + 18;
+    });
+    window.addEventListener('mouseup', () => dragging = false);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    document.getElementById('placementsInput').value = JSON.stringify(placements);
+    document.getElementById('sendForm').submit();
+  });
+
+  function hexToRgba(hex, a){
+    try {
+      const h = hex.replace('#','');
+      const bigint = parseInt(h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    } catch { return 'rgba(37,99,235,.08)'; }
+  }
+</script>
+</body>
+</html>

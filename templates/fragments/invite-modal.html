@@ -1,0 +1,284 @@
+<div th:fragment="invite-modal">
+<!-- Invite Modal -->
+<dialog id="inviteModal" class="invite-modal" role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="inviteTitle">Invite Team Member</h3>
+            <button id="closeModalBtn" class="close-button" aria-label="Close">✕</button>
+        </div>
+
+        <form id="inviteForm" class="invite-form" method="post" action="/invite/create" novalidate>
+            <input type="hidden" id="csrfParam" name="_csrf" />
+            <input type="hidden" id="accountId" name="accountId" />
+            <div class="form-row">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName" placeholder="Enter full name" required />
+                <div class="field-error" id="err-name" aria-live="polite" hidden></div>
+            </div>
+
+            <div class="form-row">
+                <label for="teamName">Team Name</label>
+                <input type="text" id="teamName" name="teamNameDisplay" placeholder="Auto-selected from current workspace" readonly />
+            </div>
+
+            <div class="form-row">
+                <label for="teamIdDisplay">Team ID</label>
+                <input type="text" id="teamIdDisplay" name="teamIdDisplay" placeholder="Auto-filled" readonly />
+            </div>
+
+            <div class="form-row">
+                <label for="emailField">Email Address</label>
+                <input type="email" id="emailField" name="email" placeholder="email@example.com" required />
+                <div class="field-error" id="err-email" aria-live="polite" hidden></div>
+            </div>
+
+            <div class="form-row">
+                <label for="role">Role</label>
+                <select id="role" name="role" required>
+                    <option value="" disabled selected>Select a role</option>
+                    <option value="admin">Admin - Full access</option>
+                    <option value="viewer">Viewer - Read only</option>
+                    <option value="signer">Signer - Can sign</option>
+                </select>
+                <div class="field-error" id="err-role" aria-live="polite" hidden></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+                <button type="submit" class="submit-btn">Send Invite</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="inviteModalOverlay" aria-hidden="true"></div>
+
+<script>
+    (function(){
+        // Elements
+        const inviteCard = document.getElementById('inviteCard');
+        const overlay = document.getElementById('inviteModalOverlay');
+        const dialog = document.getElementById('inviteModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const form = document.getElementById('inviteForm');
+        const toast = document.getElementById('toast');
+
+        let lastFocused = null;
+        let focusHandler = null;
+
+        // Open dialog
+        function openDialog(){
+            lastFocused = document.activeElement;
+            overlay.style.display = 'block';
+            overlay.setAttribute('aria-hidden','false');
+
+            if (typeof dialog.showModal === 'function') {
+                dialog.showModal();
+            } else {
+                dialog.setAttribute('open','');
+                dialog.style.display = 'block';
+            }
+
+            setTimeout(()=> document.getElementById('fullName').focus(), 40);
+            trapFocus(dialog);
+
+            // Prefill Team fields from current workspace selector or meta
+            try {
+                const wsSelect = document.querySelector('select[name="accountId"]');
+                const teamIdInput = document.getElementById('accountId');
+                const teamNameInput = document.getElementById('teamName');
+                const teamIdDisplay = document.getElementById('teamIdDisplay');
+                const metaActiveId = document.querySelector('meta[name="activeAccountId"]');
+                const metaActiveName = document.querySelector('meta[name="activeAccountName"]');
+
+                let selId = null;
+                let selText = '';
+                if (wsSelect && wsSelect.value) {
+                    selId = wsSelect.value;
+                    const selOpt = wsSelect.options[wsSelect.selectedIndex];
+                    selText = selOpt ? selOpt.text : '';
+                }
+                if (!selId && metaActiveId) {
+                    selId = metaActiveId.getAttribute('content');
+                }
+                if (selId) {
+                    teamIdInput.value = selId;
+                    teamIdDisplay.value = selId;
+                } else {
+                    teamIdInput.value = '';
+                    teamIdDisplay.value = '';
+                }
+                if (selText) {
+                    teamNameInput.value = selText;
+                } else if (metaActiveName) {
+                    teamNameInput.value = metaActiveName.getAttribute('content') || '';
+                } else if (!teamNameInput.value) {
+                    teamNameInput.value = '';
+                }
+            } catch(e) { /* no-op */ }
+        }
+
+        // Close dialog
+        function closeDialog(){
+            try { dialog.close(); } catch(e) { 
+                dialog.removeAttribute('open'); 
+                dialog.style.display='none'; 
+            }
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden','true');
+            releaseFocusTrap();
+            if (lastFocused) lastFocused.focus();
+        }
+
+        // Event Listeners
+        if (inviteCard) {
+            inviteCard.addEventListener('click', openDialog);
+            inviteCard.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { 
+                    e.preventDefault(); 
+                    openDialog(); 
+                }
+            });
+        }
+
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeDialog);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeDialog);
+        if (overlay) overlay.addEventListener('click', closeDialog);
+
+        if (dialog) {
+            dialog.addEventListener('click', (e) => {
+                const rect = dialog.getBoundingClientRect();
+                const isInDialog = (e.clientX >= rect.left && e.clientX <= rect.right && 
+                                 e.clientY >= rect.top && e.clientY <= rect.bottom);
+                if (!isInDialog) closeDialog();
+            });
+        }
+
+        // Form submission
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                clearErrors();
+                
+                const name = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('emailField').value.trim();
+                const role = document.getElementById('role').value;
+                // Populate team fields from current workspace selection (fallback to activeAccountName meta)
+                const wsSelect = document.querySelector('select[name="accountId"]');
+                const teamIdInput = document.getElementById('accountId');
+                const teamNameInput = document.getElementById('teamName');
+                const metaActiveId = document.querySelector('meta[name="activeAccountId"]');
+                const metaActiveName = document.querySelector('meta[name="activeAccountName"]');
+                if (wsSelect && wsSelect.value) {
+                    teamIdInput.value = wsSelect.value;
+                    const selOpt = wsSelect.options[wsSelect.selectedIndex];
+                    teamNameInput.value = selOpt ? selOpt.text : '';
+                } else {
+                    // no selector; use meta as active workspace
+                    teamIdInput.value = metaActiveId ? (metaActiveId.getAttribute('content') || '') : '';
+                    teamNameInput.value = metaActiveName ? (metaActiveName.getAttribute('content') || '') : '';
+                }
+                // Set CSRF token
+                const csrfMeta = document.querySelector('meta[name="_csrf"]');
+                const csrfField = document.getElementById('csrfParam');
+                if (csrfMeta && csrfField) csrfField.value = csrfMeta.getAttribute('content') || '';
+                
+                let valid = true;
+                if (!name) { showError('err-name','Please enter the full name'); valid = false; }
+                if (!validateEmail(email)) { showError('err-email','Please enter a valid email address'); valid = false; }
+                if (!role) { showError('err-role','Please select a role'); valid = false; }
+                if (!valid) return;
+                form.submit();
+            });
+        }
+
+        // Helper functions
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = msg;
+                el.hidden = false;
+            }
+        }
+
+        function clearErrors() {
+            ['err-name','err-email','err-role'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { 
+                    el.textContent = ''; 
+                    el.hidden = true; 
+                }
+            });
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function showToast(message, timeout = 2400) {
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(()=> toast.classList.remove('show'), timeout);
+        }
+
+        // Focus trap for accessibility
+        function trapFocus(container) {
+            if (!container) return;
+            
+            const focusable = 'a[href], area[href], input:not([disabled]), select:not([disabled]), ' +
+                            'textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            const focusableElements = Array.from(container.querySelectorAll(focusable));
+            
+            if (!focusableElements.length) return;
+            
+            const first = focusableElements[0];
+            const last = focusableElements[focusableElements.length - 1];
+
+            focusHandler = function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === first) { 
+                            e.preventDefault(); 
+                            last.focus(); 
+                        }
+                    } else {
+                        if (document.activeElement === last) { 
+                            e.preventDefault(); 
+                            first.focus(); 
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeDialog();
+                }
+            };
+            
+            container.addEventListener('keydown', focusHandler);
+        }
+
+        function releaseFocusTrap() {
+            if (focusHandler && dialog) {
+                dialog.removeEventListener('keydown', focusHandler);
+            }
+            focusHandler = null;
+        }
+
+        // Polyfill for older browsers without dialog
+        if (typeof HTMLDialogElement === 'undefined' && dialog) {
+            dialog.close = function() { 
+                this.removeAttribute('open'); 
+                this.style.display='none'; 
+            };
+        }
+
+        // Expose openDialog for other scripts if needed
+        window.openInviteModal = openDialog;
+    })();
+</script>
+</div>

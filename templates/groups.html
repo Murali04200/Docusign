@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Groups</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <a href="/dashboard" class="btn btn-outline-secondary me-2">Back</a>
+    <h4 class="mb-0">Groups</h4>
+  </div>
+
+  <!-- Show message if there are no teams -->
+  <div th:if="${#lists.isEmpty(teams)}" class="alert alert-info">You don't belong to any groups yet.</div>
+
+  <!-- Render teams provided by controller -->
+  <div th:each="acc : ${teams}" class="card mb-3 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div>
+        <strong th:text="${acc.name}">Group Name</strong>
+        <span class="badge bg-primary ms-2">TEAM</span>
+      </div>
+      <small class="text-muted">Owner: <span th:text="${acc.ownerDisplayName}">Owner</span></small>
+    </div>
+    <div class="card-body">
+      <h6 class="text-muted">Members <span class="badge bg-light text-dark ms-1" th:text="${acc.members != null ? #lists.size(acc.members) : 0}">0</span></h6>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="m : ${acc.members}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center me-2" style="width:28px;height:28px; font-size:.8rem;">
+                    <span th:text="${(m.displayName != null and m.displayName.length() > 0) ? m.displayName.substring(0,1).toUpperCase() : ((m.email != null and m.email.length() > 0) ? m.email.substring(0,1).toUpperCase() : 'U')}">U</span>
+                  </div>
+                  <span th:text="${m.displayName != null and m.displayName.length() > 0 ? m.displayName : (m.keycloakUserId != null ? m.keycloakUserId : 'Unknown')}">Name</span>
+                </div>
+              </td>
+              <td th:text="${m.email}">email@example.com</td>
+              <td>
+                <span class="badge"
+                      th:classappend="${m.role} == 'OWNER' ? ' bg-warning text-dark' :
+                                      (${m.role} == 'ADMIN' ? ' bg-primary' :
+                                      (${m.role} == 'SIGNER' ? ' bg-secondary' : ' bg-info'))"
+                      th:text="${m.role}">ROLE</span>
+              </td>
+              <td th:text="${m.joinedAt != null ? m.joinedAt : '-'}">date</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
