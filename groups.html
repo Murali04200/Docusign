@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Groups</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <style>
+    .member-row {
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .member-row:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    .activity-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    .member-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-3">
+    <a href="/dashboard" class="btn btn-outline-secondary me-2">Back</a>
+    <h4 class="mb-0">Groups</h4>
+  </div>
+
+  <!-- Show message if there are no teams -->
+  <div th:if="${#lists.isEmpty(teams)}" class="alert alert-info">You don't belong to any groups yet.</div>
+
+  <!-- Render teams provided by controller -->
+  <div th:each="acc : ${teams}" class="card mb-3 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div>
+        <strong th:text="${acc.name}">Group Name</strong>
+        <span class="badge bg-primary ms-2">TEAM</span>
+      </div>
+      <small class="text-muted">Owner: <span th:text="${acc.ownerDisplayName}">Owner</span></small>
+    </div>
+    <div class="card-body">
+      <h6 class="text-muted">Members <span class="badge bg-light text-dark ms-1" th:text="${acc.members != null ? #lists.size(acc.members) : 0}">0</span></h6>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="member-row" th:each="m : ${acc.members}" 
+                th:data-member-id="${m.keycloakUserId}"
+                th:data-member-name="${m.displayName}"
+                th:data-member-email="${m.email}"
+                th:data-member-role="${m.role}"
+                th:data-member-joined="${m.joinedAt}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center me-2" style="width:28px;height:28px; font-size:.8rem;">
+                    <span th:text="${(m.displayName != null and m.displayName.length() > 0) ? m.displayName.substring(0,1).toUpperCase() : ((m.email != null and m.email.length() > 0) ? m.email.substring(0,1).toUpperCase() : 'U')}">U</span>
+                  </div>
+                  <span th:text="${m.displayName != null and m.displayName.length() > 0 ? m.displayName : (m.keycloakUserId != null ? m.keycloakUserId : 'Unknown')}">Name</span>
+                </div>
+              </td>
+              <td th:text="${m.email}">email@example.com</td>
+              <td>
+                <span class="badge"
+                      th:classappend="${m.role} == 'OWNER' ? ' bg-warning text-dark' :
+                                      (${m.role} == 'ADMIN' ? ' bg-primary' :
+                                      (${m.role} == 'SIGNER' ? ' bg-secondary' : ' bg-info'))"
+                      th:text="${m.role}">ROLE</span>
+              </td>
+              <td th:text="${m.joinedAt != null ? m.joinedAt : '-'}">date</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Member Details Modal -->
+<div class="modal fade" id="memberModal" tabindex="-1" aria-labelledby="memberModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="memberModalLabel">Member Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <div class="member-avatar bg-primary text-white" id="memberAvatar">
+            <!-- Initial will be set by JavaScript -->
+          </div>
+          <h4 id="memberName" class="mb-1">Member Name</h4>
+          <p class="text-muted mb-2" id="memberEmail">email@example.com</p>
+          <span class="badge bg-primary" id="memberRole">ROLE</span>
+          <p class="text-muted small mt-2">Member since <span id="memberSince">-</span></p>
+        </div>
+
+        <h6 class="border-bottom pb-2 mb-3">Recent Activities</h6>
+        <div id="memberActivities">
+          <!-- Activities will be loaded here -->
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-activity fs-1 opacity-50 mb-2"></i>
+            <p>No recent activities found</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const memberRows = document.querySelectorAll('.member-row');
+    const memberModal = new bootstrap.Modal(document.getElementById('memberModal'));
+    
+    // Function to fetch member activities from the API
+    async function getMemberActivities(memberId) {
+        try {
+            const response = await fetch(`/api/members/${encodeURIComponent(memberId)}/activities?limit=50`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const activities = await response.json();
+            
+            // Filter out duplicates using a more comprehensive approach
+            const uniqueActivities = [];
+            const seenActivities = new Map();
+            
+            // Process activities in reverse chronological order (newest first)
+            activities.reverse().forEach(activity => {
+                if (!activity || !activity.id) return; // Skip invalid activities
+                
+                // Create a unique key that combines multiple properties
+                const activityKey = `${activity.id}_${activity.type}_${activity.action}_${activity.title}`;
+                const timestamp = activity.timestamp ? new Date(activity.timestamp) : new Date();
+                
+                // Skip if we've seen this exact activity before
+                if (!seenActivities.has(activityKey)) {
+                    seenActivities.set(activityKey, true);
+                    
+                    // Create a clean activity object with only the properties we need
+                    const cleanActivity = {
+                        id: activity.id,
+                        type: activity.type || 'document', // Default type
+                        action: activity.action || 'viewed', // Default action
+                        title: activity.title || 'Untitled',
+                        timestamp: formatActivityTime(timestamp),
+                        icon: getActivityIcon(activity.type, activity.action),
+                        color: getActivityColor(activity.action),
+                        details: activity.details || `${activity.action || 'Action'} ${activity.type || 'document'}: ${activity.title || 'Untitled'}`,
+                        timestampValue: timestamp.getTime()
+                    };
+                    
+                    // Only add if this is a unique activity
+                    const isDuplicate = uniqueActivities.some(existing => 
+                        existing.id === cleanActivity.id && 
+                        existing.type === cleanActivity.type && 
+                        existing.action === cleanActivity.action && 
+                        existing.title === cleanActivity.title
+                    );
+                    
+                    if (!isDuplicate) {
+                        uniqueActivities.push(cleanActivity);
+                    }
+                }
+            });
+            
+            // Sort by timestamp (newest first) and limit to 10 most recent
+            return uniqueActivities
+                .sort((a, b) => b.timestampValue - a.timestampValue)
+                .slice(0, 10);
+        } catch (error) {
+            console.error('Error fetching activities:', error);
+            throw error;
+        }
+    }
+
+    // Helper functions
+    function formatActivityTime(timestamp) {
+        if (!timestamp) return 'Just now';
+        
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMs = now - date;
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInHours / 24);
+        
+        if (diffInHours < 1) {
+            const minutes = Math.floor(diffInMs / (1000 * 60));
+            return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+        } else if (diffInDays < 7) {
+            return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    }
+
+    function getActivityIcon(type, action) {
+        const icons = {
+            document: {
+                signed: 'bi-file-earmark-check',
+                viewed: 'bi-eye',
+                uploaded: 'bi-upload',
+                downloaded: 'bi-download',
+                deleted: 'bi-trash'
+            },
+            template: {
+                created: 'bi-plus-circle',
+                updated: 'bi-pencil',
+                deleted: 'bi-trash'
+            },
+            signature: {
+                requested: 'bi-envelope',
+                completed: 'bi-check-circle',
+                declined: 'bi-x-circle'
+            }
+        };
+        return (icons[type] && icons[type][action]) || 'bi-activity';
+    }
+
+    function getActivityColor(action) {
+        const colors = {
+            signed: 'text-success',
+            completed: 'text-success',
+            viewed: 'text-info',
+            uploaded: 'text-primary',
+            created: 'text-success',
+            updated: 'text-warning',
+            deleted: 'text-danger',
+            declined: 'text-danger',
+            requested: 'text-info'
+        };
+        return colors[action] || 'text-secondary';
+    }
+
+    // Handle member row click
+    memberRows.forEach(row => {
+        row.addEventListener('click', async function() {
+            const memberId = this.getAttribute('data-member-id');
+            const memberName = this.getAttribute('data-member-name');
+            const memberEmail = this.getAttribute('data-member-email');
+            const memberRole = this.getAttribute('data-member-role');
+            const memberSince = this.getAttribute('data-member-joined');
+            
+            // Update modal header
+            document.getElementById('memberName').textContent = memberName || 'Unknown Member';
+            document.getElementById('memberEmail').textContent = memberEmail || 'No email';
+            document.getElementById('memberRole').textContent = memberRole || 'MEMBER';
+            document.getElementById('memberSince').textContent = memberSince || '-';
+            
+            // Set avatar
+            const avatar = document.getElementById('memberAvatar');
+            const initial = (memberName ? memberName.charAt(0) : (memberEmail ? memberEmail.charAt(0) : 'U')).toUpperCase();
+            avatar.textContent = initial;
+            
+            // Show loading state
+            const activitiesContainer = document.getElementById('memberActivities');
+            activitiesContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading activities...</p>
+                </div>
+            `;
+            
+            // Show modal
+            memberModal.show();
+            
+            try {
+                // Fetch member activities
+                const activities = await getMemberActivities(memberId);
+                
+                if (activities && activities.length > 0) {
+                    // Render activities
+                    const activitiesHtml = activities.map(activity => `
+                        <div class="activity-item p-3 mb-2 rounded" style="background-color: rgba(0,0,0,0.03);">
+                            <div class="d-flex align-items-center">
+                                <div class="activity-icon ${activity.color} me-3">
+                                    <i class="bi ${activity.icon} fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>${activity.title}</strong>
+                                        <small class="text-muted">${activity.timestamp}</small>
+                                    </div>
+                                    <div class="text-muted text-capitalize">
+                                        ${activity.action} ${activity.type}
+                                    </div>
+                                    ${activity.details ? `
+                                        <div class="small text-muted mt-1">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            ${activity.details}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    activitiesContainer.innerHTML = activitiesHtml;
+                } else {
+                    activitiesContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
+                            </div>
+                            <h6 class="text-muted mb-2">No Activities Yet</h6>
+                            <p class="text-muted small mb-0">This member hasn't performed any actions yet.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading member activities:', error);
+                activitiesContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Failed to load activities. Please try again later.
+                        <div class="mt-2 small text-muted">${error.message}</div>
+                    </div>
+                `;
+            }
+        });
+        
+        // Add hover effect
+        row.style.cursor = 'pointer';
+    });
+});
+</script>
+</body>
+</html>
