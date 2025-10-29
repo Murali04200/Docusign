@@ -2,7 +2,15 @@ package com.example.Docusign.team.model;
 
 import java.time.Instant;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import com.example.Docusign.account.model.IndividualAccount;
 
 @Entity

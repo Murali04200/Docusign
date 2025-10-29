@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-    <head>
+<html lang="en" data-bs-theme="light" xmlns:th="http://www.w3.org/1999/xhtml">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>DocuSign Dashboard</title>
         <!-- Bootstrap 5 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-pQ1W8p3uH9vDOMkMt2rt7NmBGG99nmCaTKty+O+kO5OVwOB1p5MNDoAuCEi0aYawslZx0drfac+uHV5nEi7P9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+          integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
         <!-- Google Fonts - Inter -->
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <!-- CSRF Meta for Spring Security (Thymeleaf) -->
+{{ ... }}
         <meta name="_csrf" th:content="${_csrf.token}">
         <meta name="_csrf_header" th:content="${_csrf.headerName}">
         <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
@@ -39,6 +43,9 @@
             --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
             --box-shadow: 0 10px 20px rgba(0,0,0,.08);
             --box-shadow-lg: 0 30px 60px rgba(0,0,0,.18);
+            --gradient-card-1: 91, 140, 255;
+            --gradient-card-2: 139, 92, 246;
+            --gradient-card-3: 45, 212, 191;
         }
 
         /* Ensure desktop layout always leaves space for sidebar */
@@ -49,17 +56,19 @@
         }
 
         body {
-        position: relative;
-        min-height: 100vh;
-        overflow-x: hidden;
-        font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
         }
 
         body::before {
         content: "";
         position: fixed;
         inset: 0;
-        background: url('https://static.vecteezy.com/system/resources/thumbnails/019/155/428/small/colorful-gradient-abstract-background-colorful-pastel-design-vector.jpg') no-repeat center center / cover;
+        background: url('https://img.freepik.com/free-photo/vivid-blurred-colorful-wallpaper-background_58702-3508.jpg?semt=ais_hybrid&w=740&q=80') no-repeat center center / cover;
         filter: blur(8px) brightness(0.9);
         z-index: -1;
         }
@@ -83,6 +92,20 @@
             z-index: 1000;
             transition: all 0.3s ease;
             overflow-y: auto;
+            box-shadow: 0 0 30px rgba(91, 140, 255, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .sidebar .logo {
@@ -95,6 +118,18 @@
             color: #fff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .sidebar .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
         }
 
         .sidebar .logo i {
@@ -113,14 +148,44 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(91, 140, 255, 0), rgba(91, 140, 255, 0.1), rgba(91, 140, 255, 0));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
         }
 
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
             color: white;
             text-decoration: none;
+            box-shadow: 0 4px 15px rgba(91, 140, 255, 0.15);
+        }
+        
+        .sidebar .nav-link:hover::before,
+        .sidebar .nav-link.active::before {
+            transform: translateX(0%);
+        }
+        
+        .sidebar .nav-link i {
+            transition: transform 0.3s ease, text-shadow 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover i {
+            transform: translateX(3px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
         }
 
         .sidebar .nav-link i {
@@ -149,6 +214,24 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        .main-content header.app-header {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            z-index: 1100;
+        }
+
+        .main-content .content {
+            padding-top: calc(var(--header-height) + 1.5rem);
+        }
+
+        @media (max-width: 991.98px) {
+            .main-content header.app-header {
+                left: 0;
+            }
         }
 
         /* Top Navigation Bar */
@@ -395,126 +478,239 @@
 
         /* Action Cards */
         .action-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            height: 100%;
-            position: relative;
+            background: transparent;
+            border-radius: 0.9rem;
             overflow: hidden;
-            max-width: 100%;
-            margin: 0;
-            backdrop-filter: blur(8px);
-        }
-        
-        .action-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .action-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            pointer-events: none;
-        }
-
-
-        .action-card .card-header {
-            padding: 1.5rem;
-            background: white;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            border-radius: 1rem 1rem 0 0 !important;
-        }
-
-        .action-card .card-body {
-            padding: 1.5rem 1.25rem;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            background: transparent;
+            border: none;
         }
-        
-        .action-card .icon-wrapper::before {
-            content: '';
+
+        .docu-card-body {
+            position: relative;
+            padding: 2.25rem;
+            border-radius: calc(var(--border-radius) * 0.7);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 100%;
+        }
+
+        .docu-card-body.docu-card-medium {
+            padding: 1.75rem;
+            gap: 1.1rem;
+        }
+
+        .docu-card-body.docu-card-medium .icon-wrapper {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+        }
+
+        .docu-card-body.docu-card-medium .card-heading h5 {
+            font-size: 1.05rem;
+        }
+
+        .docu-card-body.docu-card-medium .card-heading p {
+            font-size: 0.85rem;
+        }
+
+        .docu-card-body.docu-card-medium .card-tags .badge {
+            font-size: 0.65rem;
+            padding: 0.35rem 0.9rem;
+        }
+
+        .docu-card-body .card-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .docu-card-body .card-hero .badge {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.15) 100%);
+            color: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+        }
+
+        .docu-card-body .card-heading h5 {
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #0f172a;
+        }
+
+        .docu-card-body .card-heading p {
+            margin-bottom: 0;
+            color: rgba(15, 23, 42, 0.7);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .docu-card-body .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .docu-card-body .card-tags .badge {
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            font-weight: 500;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 100%);
+            color: var(--dark);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .docu-card-body .card-cta {
+            margin-top: auto;
+        }
+
+        .btn-cta-gradient {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.6rem;
+            border-radius: 999px;
+            border: none;
+            color: #fff !important;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background-image: linear-gradient(120deg,
+                    rgba(var(--gradient-card-1), 0.95) 0%,
+                    rgba(var(--gradient-card-2), 0.95) 48%,
+                    rgba(var(--gradient-card-3), 0.95) 100%);
+            background-size: 220% 220%;
+            box-shadow: 0 14px 32px rgba(var(--gradient-card-1), 0.35);
+            transition: transform 0.35s ease, box-shadow 0.35s ease, background-position 0.6s ease;
+            overflow: hidden;
+        }
+
+        .btn-cta-gradient::after {
+            content: "";
             position: absolute;
             inset: 0;
-            opacity: 0.1;
-            background: currentColor;
-            pointer-events: none;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55), transparent 65%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
         }
 
-        .action-card .icon-wrapper i {
-            font-size: 1.4rem;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            z-index: 2;
+        .btn-cta-gradient:hover,
+        .btn-cta-gradient:focus {
+            background-position: 90% 50%;
+            transform: translateY(-3px);
+            box-shadow: 0 18px 36px rgba(var(--gradient-card-2), 0.35);
+            color: #fff;
         }
 
-        .action-card .icon-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 50%);
-            border-radius: 30px;
-            z-index: 1;
-            pointer-events: none;
+        .btn-cta-gradient:hover::after,
+        .btn-cta-gradient:focus::after {
+            opacity: 0.35;
         }
 
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-            border-color: transparent;
-        }
-        
-        .action-card:hover .icon-wrapper i {
-            transform: scale(1.1) translateY(-3px) rotateY(15deg);
-            filter: brightness(1.1) drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+        .btn-cta-gradient:active {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(var(--gradient-card-3), 0.4);
         }
 
-        .action-card .icon-wrapper.primary {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-            color: white !important;
-        }
-
-        .action-card .icon-wrapper.success {
-            background: linear-gradient(135deg, #10b981, #059669) !important;
-            color: white !important;
-        }
-        
-
-        .action-card h5 {
-            font-weight: 600;
-            margin-bottom: 0.15rem;
-            color: #1e293b;
-            font-size: 0.95rem;
-            line-height: 1.3;
-        }
-
-        .action-card p {
-            color: #64748b;
-            font-size: 0.8rem;
-            margin: 0.25rem 0 0.75rem;
-            line-height: 1.4;
+        .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.45s ease, box-shadow 0.45s ease;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            --icon-glow: rgba(93, 135, 255, 0.3);
         }
 
-        .action-card .btn {
-            min-width: 120px;
-            padding: 0.3rem 0.75rem;
-            font-size: 0.8rem;
+        .icon-wrapper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.65), transparent 55%);
+            opacity: 0;
+            transition: opacity 0.45s ease;
+        }
+
+        .icon-wrapper i {
+            color: inherit;
+            text-shadow: 0 4px 18px rgba(15, 23, 42, 0.45),
+                         0 0 14px rgba(255, 255, 255, 0.55);
+            filter: drop-shadow(0 6px 18px rgba(91, 140, 255, 0.35));
+            transition: filter 0.35s ease, text-shadow 0.35s ease;
+        }
+
+        .glossy:hover .icon-wrapper {
+            transform: translateY(-6px) scale(1.06);
+            box-shadow: 0 15px 30px var(--icon-glow, rgba(13, 110, 253, 0.25));
+        }
+
+        .glossy:hover .icon-wrapper::after {
+            opacity: 1;
+        }
+
+        .glossy .icon-wrapper i {
+            font-size: 1.65rem;
+            animation: iconPulse 4.5s ease-in-out infinite;
+        }
+
+        .glossy:hover .icon-wrapper i {
+            animation-duration: 2.2s;
+            filter: drop-shadow(0 8px 24px rgba(91, 140, 255, 0.45));
+            text-shadow: 0 6px 20px rgba(15, 23, 42, 0.55),
+                         0 0 18px rgba(255, 255, 255, 0.65);
+        }
+
+        .icon-wrapper.primary {
+            background: linear-gradient(135deg, rgba(91, 140, 255, 0.95) 0%, rgba(139, 92, 246, 0.9) 55%, rgba(59, 130, 246, 0.88) 100%);
+            color: #ffffff;
+            --icon-glow: rgba(91, 140, 255, 0.4);
+        }
+
+        .icon-wrapper.success {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(16, 185, 129, 0.9) 50%, rgba(45, 212, 191, 0.88) 100%);
+            color: #ffffff;
+            --icon-glow: rgba(16, 185, 129, 0.42);
+        }
+
+        .icon-wrapper.info {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.96) 0%, rgba(14, 165, 233, 0.9) 50%, rgba(56, 189, 248, 0.88) 100%);
+            color: #ffffff;
+            --icon-glow: rgba(14, 165, 233, 0.4);
+        }
+
+        .icon-wrapper.warning {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.96) 0%, rgba(234, 179, 8, 0.9) 48%, rgba(250, 204, 21, 0.86) 100%);
+            color: #fffef2;
+            --icon-glow: rgba(249, 115, 22, 0.38);
+        }
+
+        .icon-wrapper.secondary {
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.95) 0%, rgba(100, 116, 139, 0.9) 52%, rgba(148, 163, 184, 0.85) 100%);
+            color: #ffffff;
+            --icon-glow: rgba(100, 116, 139, 0.36);
         }
 
         /* Documents Table */
@@ -717,28 +913,51 @@
         /* Glossy cards */
         .glossy {
             position: relative;
-            background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.55) 100%);
+            background: linear-gradient(140deg,
+                rgba(var(--gradient-card-1), 0.35) 0%,
+                rgba(var(--gradient-card-2), 0.32) 45%,
+                rgba(var(--gradient-card-3), 0.38) 100%);
             border: 1px solid rgba(255,255,255,0.35) !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             overflow: hidden;
+            border-radius: var(--border-radius);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .glossy:before {
+        .glossy:before,
+        .glossy:after {
             content: "";
             position: absolute;
-            top: -60%;
-            left: -60%;
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 60%);
             pointer-events: none;
-            transform: rotate(15deg);
+        }
+        .glossy:before {
+            inset: -35% 10% 55% -45%;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.1) 55%, transparent 80%);
+            opacity: 0;
+            transition: opacity 0.45s ease;
+        }
+        .glossy:after {
+            top: -140%;
+            left: -45%;
+            width: 65%;
+            height: 320%;
+            background: linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+            transform: rotate(30deg);
+            animation: sheen 8s ease-in-out infinite;
+            opacity: 0.4;
         }
         .glossy:hover {
-            box-shadow: 0 14px 30px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
-            transition: all .2s ease;
+            box-shadow: 0 24px 55px rgba(15, 23, 42, 0.22);
+            transform: translateY(-8px) scale(1.01);
+            border-color: rgba(255,255,255,0.55) !important;
+        }
+        .glossy:hover:before {
+            opacity: 1;
+        }
+        .glossy:hover:after {
+            animation-duration: 4.5s;
         }
         .glossy .card-header {
             background: transparent !important;
@@ -913,7 +1132,7 @@
             text-shadow: 0 2px 6px rgba(0,0,0,0.25);
         }
     </style>
-</head>
+</html>
 <body>
     <!-- Sidebar -->
     <nav class="sidebar">
@@ -922,15 +1141,19 @@
             <span>DocuSign</span>
         </div>
         <div class="nav flex-column">
-            <a href="#" class="nav-link active">
+            <a href="/dashboard" class="nav-link active">
                 <i class="bi bi-house-door"></i>
                 <span>Home</span>
             </a>
-            <a href="#" class="nav-link">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Agreement</span>
+            <a href="/agreements" class="nav-link">
+                <i class="bi bi-folder2-open"></i>
+                <span>Manage</span>
             </a>
-            <a href="#" class="nav-link">
+            <a href="/send-signature" class="nav-link">
+                <i class="bi bi-send"></i>
+                <span>Send</span>
+            </a>
+            <a href="/templates" class="nav-link">
                 <i class="bi bi-file-earmark-richtext"></i>
                 <span>Templates</span>
             </a>
@@ -950,18 +1173,18 @@
     </nav>
     <div class="main-content">
         <!-- Top Navigation Bar -->
-        <header class="sticky-top" style="z-index:1040;">
+        <header class="app-header" style="z-index:1040;">
           <nav class="navbar navbar-expand-lg shadow-sm" style="background: linear-gradient(90deg,#0d6efd,#6610f2);">
             <div class="container-fluid py-2">
               <div class="d-flex align-items-center">
                 <button type="button" class="btn btn-sm btn-light d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#workspaceModal">
                   <i class="bi bi-hdd-network me-2"></i>
-                  <span>Workspace</span>
+                  <span th:text="${isTeamActive} ? 'Switch Workspace' : 'Workspace'">Workspace</span>
                 </button>
               </div>
 
               <div class="flex-grow-1 d-none d-sm-flex justify-content-center">
-                <span class="navbar-brand-center">DocuSign</span>
+                <span class="navbar-brand-center" th:text="${isTeamActive and activeAccountName != null ? activeAccountName : 'DocuSign'}">DocuSign</span>
               </div>
 
               <div class="ms-auto d-flex align-items-center gap-2">
@@ -1021,9 +1244,6 @@
             </div>
           </nav>
         </header>
-        <!-- Spacer so content doesn't hide under glassy header on some browsers -->
-        <div style="height: 60px;"></div>
-
         <!-- Profile Modal -->
         <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-sm">
@@ -1052,91 +1272,328 @@
             </div>
           </div>
         </div>
-            <div class="content container py-3">
-            <!-- Stats Cards Row -->
-            <div class="row g-4 mb-4 section">
-                <!-- Pending Documents Card -->
-                <div class="col-md-4">
-                    <div class="stats-card glossy animate__animated animate__fadeInUp">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="text-uppercase text-muted small mb-2">Pending</h6>
-                                <h3 class="mb-0" th:text="${pendingCount}">0</h3>
+            <div class="content container pb-5">
+            <!-- Access Banner -->
+            <div class="alert alert-warning d-flex align-items-center mb-4" role="alert" th:if="${hasLimitedAccess}">
+                <i class="bi bi-shield-lock me-2"></i>
+                <div>
+                    Limited access: some actions are disabled for your current role in this workspace.
+                </div>
+            </div>
+
+            <!-- Enhanced Agreements Section with Modern Glassy Cards -->
+            <div class="row g-4 mb-4" th:if="${envelopeStats != null}">
+                <div class="col-12">
+                    <h5 class="mb-3 fw-semibold text-black"><i class="bi bi-folder2-open me-2"></i>Agreements</h5>
+                </div>
+                
+                <!-- Draft Card -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card glass-card h-100 border-0 overflow-hidden position-relative animate__animated animate__fadeInUp" style="--gradient-1: #6c757d; --gradient-2: #5a6268; --gradient-3: #4e555b;">
+                        <div class="card-body position-relative z-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="text-dark mb-1 small fw-medium">Draft</p>
+                                    <h3 class="mb-0 fw-bold text-dark" th:text="${envelopeStats.draft}">0</h3>
+                                </div>
+                                <div class="icon-wrapper glass-icon animate__animated animate__pulse animate__infinite" style="--icon-color: #6c757d;">
+                                    <i class="bi bi-file-earmark fs-4"></i>
+                                </div>
                             </div>
-                            <div class="icon pending animate__animated animate__pulse animate__delay-1s animate__repeat-2">
-                                <i class="bi bi-clock fs-4"></i>
-                            </div>
+                            <a href="/agreements?status=draft" class="btn btn-neon w-100 mt-4">
+                                View Drafts <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                        <div class="mt-2">
-                            <span class="badge bg-warning bg-opacity-10 text-warning">Action Required</span>
-                        </div>
+                        <div class="gradient-overlay"></div>
                     </div>
                 </div>
-
-                <!-- Completed Documents Card -->
-                <div class="col-md-4">
-                    <div class="stats-card glossy animate__animated animate__fadeInUp animate__delay-1s">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="text-uppercase text-muted small mb-2">Completed</h6>
-                                <h3 class="mb-0" th:text="${completedCount}">0</h3>
+                
+                <!-- Sent Card -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card glass-card h-100 border-0 overflow-hidden position-relative animate__animated animate__fadeInUp animate__delay-1" style="--gradient-1: #0d6efd; --gradient-2: #0b5ed7; --gradient-3: #0a58ca;">
+                        <div class="card-body position-relative z-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="text-dark mb-1 small fw-medium">Sent</p>
+                                    <h3 class="mb-0 fw-bold text-dark" th:text="${envelopeStats.sent}">0</h3>
+                                </div>
+                                <div class="icon-wrapper glass-icon animate__animated animate__pulse animate__infinite" style="--icon-color: #0d6efd;">
+                                    <i class="bi bi-send-fill fs-4"></i>
+                                </div>
                             </div>
-                            <div class="icon completed animate__animated animate__pulse animate__delay-2s animate__repeat-2">
-                                <i class="bi bi-check-circle fs-4"></i>
-                            </div>
+                            <a href="/agreements?status=sent" class="btn btn-neon w-100 mt-4">
+                                View Sent <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                        <div class="mt-2">
-                            <span class="badge bg-success bg-opacity-10 text-success">Signed</span>
-                        </div>
+                        <div class="gradient-overlay"></div>
                     </div>
                 </div>
-
-                <!-- Draft Documents Card -->
-                <div class="col-md-4">
-                    <div class="stats-card glossy animate__animated animate__fadeInUp animate__delay-2s">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="text-uppercase text-muted small mb-2">Drafts</h6>
-                                <h3 class="mb-0" th:text="${draftCount}">0</h3>
+                
+                <!-- Completed Card -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card glass-card h-100 border-0 overflow-hidden position-relative animate__animated animate__fadeInUp animate__delay-2" style="--gradient-1: #198754; --gradient-2: #157347; --gradient-3: #146c43;">
+                        <div class="card-body position-relative z-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="text-dark mb-1 small fw-medium">Completed</p>
+                                    <h3 class="mb-0 fw-bold text-dark" th:text="${envelopeStats.completed}">0</h3>
+                                </div>
+                                <div class="icon-wrapper glass-icon animate__animated animate__pulse animate__infinite" style="--icon-color: #198754;">
+                                    <i class="bi bi-check-circle-fill fs-4"></i>
+                                </div>
                             </div>
-                            <div class="icon draft animate__animated animate__pulse animate__delay-3s animate__repeat-2">
-                                <i class="bi bi-file-earmark-text fs-4"></i>
-                            </div>
+                            <a href="/agreements?status=completed" class="btn btn-neon w-100 mt-4">
+                                View Completed <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
                         </div>
-                        <div class="mt-2">
-                            <span class="badge bg-info bg-opacity-10 text-info">In Progress</span>
+                        <div class="gradient-overlay"></div>
+                    </div>
+                </div>
+                
+                <!-- Voided Card -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="card glass-card h-100 border-0 overflow-hidden position-relative animate__animated animate__fadeInUp animate__delay-3" style="--gradient-1: #dc3545; --gradient-2: #bb2d3b; --gradient-3: #b02a37;">
+                        <div class="card-body position-relative z-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="text-dark mb-1 small fw-medium">Voided</p>
+                                    <h3 class="mb-0 fw-bold text-dark" th:text="${envelopeStats.voided}">0</h3>
+                                </div>
+                                <div class="icon-wrapper glass-icon animate__animated animate__pulse animate__infinite" style="--icon-color: #dc3545;">
+                                    <i class="bi bi-x-circle-fill fs-4"></i>
+                                </div>
+                            </div>
+                            <a href="/agreements?status=voided" class="btn btn-neon w-100 mt-4">
+                                View Voided <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                        <div class="gradient-overlay"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                /* Glass Card Styles */
+                .glass-card {
+                    background: rgba(255, 255, 255, 0.6) !important;
+                    backdrop-filter: blur(10px);
+                    border-radius: 12px !important;
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+                    transition: all 0.3s ease;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                    overflow: hidden;
+                    position: relative;
+                    z-index: 1;
+                }
+                
+                .glass-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(135deg, 
+                        var(--gradient-1) 0%, 
+                        var(--gradient-2) 50%, 
+                        var(--gradient-3) 100%);
+                    z-index: -1;
+                    opacity: 0.9;
+                    transition: all 0.5s ease;
+                }
+                
+                .glass-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+                }
+                
+                .glass-card:hover::before {
+                    opacity: 1;
+                }
+                
+                .glass-icon {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(0, 0, 0, 0.1);
+                    backdrop-filter: blur(5px);
+                    color: #000;
+                    transition: all 0.3s ease;
+                    border: 1px solid rgba(0, 0, 0, 0.1);
+                }
+                
+                .glass-card:hover .glass-icon {
+                    transform: scale(1.1);
+                    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+                }
+                
+                .btn-neon {
+                    background: rgba(0, 0, 0, 0.1);
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                    color: #000;
+                    border-radius: 8px;
+                    padding: 0.5rem 1.25rem;
+                    transition: all 0.3s ease;
+                    backdrop-filter: blur(5px);
+                    position: relative;
+                    overflow: hidden;
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    font-size: 0.8rem;
+                }
+                
+                .btn-neon::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                    transition: 0.5s;
+                }
+                
+                .btn-neon:hover {
+                    background: rgba(0, 0, 0, 0.15);
+                    color: #000;
+                    transform: translateY(-2px);
+                    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2), 
+                                0 0 30px rgba(0, 0, 0, 0.1);
+                }
+                
+                .btn-neon:hover::before {
+                    left: 100%;
+                }
+                
+                /* Neon effect based on card type */
+                .glass-card[style*="--gradient-1: #6c757d"] .btn-neon:hover {
+                    box-shadow: 0 0 10px rgba(108, 117, 125, 0.6),
+                                0 0 20px rgba(108, 117, 125, 0.4),
+                                0 0 30px rgba(108, 117, 125, 0.2);
+                }
+                
+                .glass-card[style*="--gradient-1: #0d6efd"] .btn-neon:hover {
+                    box-shadow: 0 0 10px rgba(13, 110, 253, 0.6),
+                                0 0 20px rgba(13, 110, 253, 0.4),
+                                0 0 30px rgba(13, 110, 253, 0.2);
+                }
+                
+                .glass-card[style*="--gradient-1: #198754"] .btn-neon:hover {
+                    box-shadow: 0 0 10px rgba(25, 135, 84, 0.6),
+                                0 0 20px rgba(25, 135, 84, 0.4),
+                                0 0 30px rgba(25, 135, 84, 0.2);
+                }
+                
+                .glass-card[style*="--gradient-1: #dc3545"] .btn-neon:hover {
+                    box-shadow: 0 0 10px rgba(220, 53, 69, 0.6),
+                                0 0 20px rgba(220, 53, 69, 0.4),
+                                0 0 30px rgba(220, 53, 69, 0.2);
+                }
+                
+                .gradient-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(135deg, 
+                        rgba(255, 255, 255, 0.6) 0%, 
+                        rgba(255, 255, 255, 0.4) 50%,
+                        rgba(255, 255, 255, 0.6) 100%);
+                    z-index: 1;
+                    pointer-events: none;
+                    opacity: 0.7;
+                }
+                
+                .card-body {
+                    position: relative;
+                    z-index: 2;
+                }
+                
+                /* Animation for icons */
+                @keyframes float {
+                    0% { transform: translateY(0px); }
+                    50% { transform: translateY(-5px); }
+                    100% { transform: translateY(0px); }
+                }
+                
+                .animate-float {
+                    animation: float 3s ease-in-out infinite;
+                }
+            </style>
+            <div class="row g-4 mb-4" style="overflow-x: hidden;" th:if="${!canSendDocuments}">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm glossy text-center py-5">
+                        <div class="card-body">
+                            <i class="bi bi-eye-slash-fill fs-1 text-warning mb-3"></i>
+                            <h5 class="fw-semibold">Viewer access</h5>
+                            <p class="text-muted mb-0">Upgrade your role or contact a workspace admin to send or manage signature requests.</p>
                         </div>
                     </div>
                 </div>
             </div>
- <div class="row g-4 mb-4" style="overflow-x: hidden;">
+            <div class="row g-4 mb-4" style="overflow-x: hidden;" th:if="${canSendDocuments}">
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white border-bottom-0 py-3">
-                            <h5 class="mb-0 fw-semibold">Sign or Get Signature</h5>
+                    <div class="card border-0 shadow-sm glossy animate__animated animate__fadeInUp">
+                        <div class="card-header bg-transparent border-0 py-3 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-wrapper info animate__animated animate__pulse animate__infinite">
+                                    <i class="bi bi-lightning-charge"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0 fw-semibold text-dark">Sign or Get Signature</h5>
+                                    <small class="text-secondary">Kick off document flows in seconds</small>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="card h-100 border-0 shadow-sm glossy animate__animated animate__fadeInUp">
-                                        <img src="https://cms-artifacts.motionarray.com/content/motion-array/1646834/Very_Confidential_And_Secret_Documents_high_resolution_preview_1646834.jpg?Expires=2074677773&Key-Pair-Id=K2ZDLYDZI2R1DF&Signature=qRYXw0eIrybkUmdKHICOfhXvinj3VwQfaYyDvqfebkeiQBr~Hxg11r389C-wqmp3jGVoPBRU8iuTIdW2F5qdoCnlu1TrkUeuXhtC82hXp-nJD8Ju0uLijW-ySF4XHKF6fJzOyHNswTF8wHuxS4Z39GylUQqjax2bRxS6cOeaU9YZzfPyqfhoSiJbgCpF~WaEyy8oj4B2yYivBeQJ11SpPOdlWUrbos421uLk6raNbZ859Tvm7Ux-6dYvv9Pxjma6GSr4VUX2TaXDiK~fFpfHE5a7dYwZZxutFrCT20LiMuRfj1Hqr0PHR~vbsWC3afvSHKN1eHcvbHeFEzyoAvmPtg__" class="card-img-top" alt="Sign a Document" style="object-fit: cover; height: 200px;">
-                                        <div class="card-body d-flex flex-column">
-                                            <h6 class="fw-semibold mb-1">Sign a Document</h6>
-                                            <p class="text-muted small mb-3">Upload and sign a document yourself</p>
-                                            <div class="mt-auto d-grid">
-                                                <a href="/sign" class="btn btn-primary btn-sm">Sign Now</a>
+                            <div class="row g-3 g-lg-4">
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="card h-100 border-0 glossy animate__animated animate__fadeInUp">
+                                        <div class="card-body docu-card-body docu-card-medium">
+                                            <div class="card-hero">
+                                                <div class="icon-wrapper primary animate__animated animate__pulse animate__infinite">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </div>
+                                                <span class="badge rounded-pill px-3 py-2">Quick sign</span>
+                                            </div>
+                                            <div class="card-heading">
+                                                <h5 class="fw-semibold mb-1">Sign a Document</h5>
+                                                <p class="small mb-0">Upload and complete a document right away with an elevated signing experience.</p>
+                                            </div>
+                                            <div class="card-tags">
+                                                <span class="badge rounded-pill px-3 py-2">Drag &amp; drop</span>
+                                                <span class="badge rounded-pill px-3 py-2">Self sign</span>
+                                            </div>
+                                            <div class="card-cta d-grid">
+                                                <a href="/sign" class="btn btn-cta-gradient btn-sm">Sign Now</a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="card h-100 border-0 shadow-sm glossy animate__animated animate__fadeInUp animate__delay-1s">
-                                        <img src="https://c4.wallpaperflare.com/wallpaper/657/137/89/work-finance-documents-office-wallpaper-thumb.jpg" class="card-img-top" alt="Get Signature" style="object-fit: cover; height: 200px;">
-                                        <div class="card-body d-flex flex-column">
-                                            <h6 class="fw-semibold mb-1">Get Signature</h6>
-                                            <p class="text-muted small mb-3">Send to others to collect signatures</p>
-                                            <div class="mt-auto d-grid">
-                                                <a href="/send-signature" class="btn btn-outline-primary btn-sm">Start Request</a>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="card h-100 border-0 glossy animate__animated animate__fadeInUp animate__delay-1s">
+                                        <div class="card-body docu-card-body docu-card-medium">
+                                            <div class="card-hero">
+                                                <div class="icon-wrapper info animate__animated animate__pulse animate__delay-1s animate__infinite">
+                                                    <i class="bi bi-send-check"></i>
+                                                </div>
+                                                <span class="badge rounded-pill px-3 py-2">Smart routing</span>
+                                            </div>
+                                            <div class="card-heading">
+                                                <h5 class="fw-semibold mb-1">Get Signature</h5>
+                                                <p class="small mb-0">Share packages with teammates, collect signatures, and track progress in real time.</p>
+                                            </div>
+                                            <div class="card-tags">
+                                                <span class="badge rounded-pill px-3 py-2">Bulk send</span>
+                                                <span class="badge rounded-pill px-3 py-2">Role-based</span>
+                                            </div>
+                                            <div class="card-cta d-grid">
+                                                <a href="/send-signature" class="btn btn-cta-gradient btn-sm">Start Request</a>
                                             </div>
                                         </div>
                                     </div>
@@ -1157,7 +1614,6 @@
                                   <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
                                   <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
                                   <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
-                                  <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
                                 </div>
                                 <div class="carousel-inner" id="promoSlides">
                                   <div class="carousel-item active position-relative">
@@ -1210,54 +1666,144 @@
                 </div>
             </div>
 
-            <!-- Quick Actions (below slideshow) -->
-            <div class="row g-4 mb-4" style="overflow-x: hidden;">
-                <div class="col-md-4">
-                    <div class="card action-card h-100 glossy">
-                        <div class="card-header d-flex align-items-center">
-                            <div class="icon-wrapper success me-3"><i class="bi bi-people"></i></div>
-                            <div>
-                                <h5 class="mb-0">View Groups</h5>
-                                <small class="text-muted">See your teams and members</small>
-                            </div>
+            <!-- Sign Now Card -->
+            <div class="row mb-4" id="signNowSection" style="display: none;">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0"><i class="bi bi-pen me-2"></i>Sign Now</h5>
+                            <span class="badge bg-danger" id="pendingCount">0</span>
                         </div>
-                        <div class="card-body">
-                            <a href="/groups" class="btn btn-sm btn-outline-primary">Open Groups</a>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush" id="pendingDocumentsList">
+                                <!-- Documents will be loaded here -->
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card action-card h-100">
-                        <div class="card-header d-flex align-items-center">
-                            <div class="icon-wrapper primary me-3"><i class="bi bi-upload"></i></div>
-                            <div>
-                                <h5 class="mb-0">Upload Document</h5>
-                                <small class="text-muted">Add files to your workspace</small>
-                            </div>
+            </div>
+
+
+            <!-- Recent Envelopes -->
+            <div class="row mb-4" th:if="${recentEnvelopes != null and !recentEnvelopes.isEmpty()}">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Agreements</h5>
+                            <a href="/agreements" class="btn btn-sm btn-outline-primary">View All</a>
                         </div>
-                        <div class="card-body">
-                            <a href="#" class="btn btn-sm btn-primary">Upload</a>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Document</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="envelope : ${recentEnvelopes}">
+                                            <td>
+                                                <a th:href="@{/agreements/{id}(id=${envelope.id})}" class="text-decoration-none fw-semibold">
+                                                    <span th:text="${envelope.name}">Document Name</span>
+                                                </a>
+                                                <div class="small text-muted" th:if="${envelope.subject}" th:text="${envelope.subject}"></div>
+                                            </td>
+                                            <td>
+                                                <span class="badge"
+                                                      th:classappend="${envelope.status == 'completed' ? 'bg-success' : (envelope.status == 'sent' or envelope.status == 'delivered' ? 'bg-primary' : (envelope.status == 'voided' ? 'bg-danger' : 'bg-secondary'))}"
+                                                      th:text="${#strings.capitalize(envelope.status != null ? envelope.status : 'draft')}">
+                                                    Status
+                                                </span>
+                                            </td>
+                                            <td class="small text-muted" th:text="${#temporals.format(envelope.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+                                            <td>
+                                                <a th:href="@{/agreements/{id}(id=${envelope.id})}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card action-card h-100">
-                        <div class="card-header d-flex align-items-center">
-                            <div class="icon-wrapper me-3" style="background: rgba(108,117,125,.1); color:#6c757d;"><i class="bi bi-file-earmark-text"></i></div>
-                            <div>
-                                <h5 class="mb-0">Create Template</h5>
-                                <small class="text-muted">Build reusable docs</small>
+            </div>
+
+            <!-- Action Required Envelopes -->
+            <div class="row mb-4" th:if="${actionRequiredEnvelopes != null and !actionRequiredEnvelopes.isEmpty()}">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm border-start border-warning border-4">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Action Required</h5>
+                            <span class="badge bg-warning text-dark" th:text="${actionRequiredEnvelopes.size()}">0</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a th:each="envelope : ${actionRequiredEnvelopes}"
+                                   th:href="@{/agreements/{id}(id=${envelope.id})}"
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-semibold" th:text="${envelope.name}">Document Name</h6>
+                                            <p class="mb-0 small text-muted" th:if="${envelope.subject}" th:text="${envelope.subject}">Subject</p>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-warning text-dark" th:text="${#strings.capitalize(envelope.status)}">Status</span>
+                                            <div class="small text-muted mt-1" th:text="${#temporals.format(envelope.createdAt, 'MMM dd, yyyy')}">Date</div>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <a href="#" class="btn btn-sm btn-outline-secondary">Coming soon</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Team Activity Feed -->
+            <div class="row mb-4" th:if="${isTeamActive}">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper me-3" style="background: rgba(102,16,242,.1); color:#6610f2;">
+                                    <i class="bi bi-activity"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0 fw-semibold">Team activity</h5>
+                                    <small class="text-muted">Recent actions captured for this workspace</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush" th:if="${teamActivities != null and !teamActivities.isEmpty()}">
+                                <div class="list-group-item d-flex align-items-center" th:each="activity : ${teamActivities}">
+                                    <div class="me-3 text-primary">
+                                        <i class="bi bi-circle-fill" style="font-size:8px;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold" th:text="${activity.actionType}">INVITE_SENT</div>
+                                        <div class="small text-muted" th:text="${activity.detail}">Detail</div>
+                                        <div class="small text-muted" th:text="${activity.actorDisplayName != null ? activity.actorDisplayName : activity.actorEmail}">Actor</div>
+                                    </div>
+                                    <div class="text-muted small" th:text="${#temporals.format(activity.createdAt, 'dd MMM yyyy, hh:mm a')}">Time</div>
+                                </div>
+                            </div>
+                            <div class="p-4 text-center text-muted" th:if="${teamActivities == null or teamActivities.isEmpty()}">
+                                <i class="bi bi-body-text d-block fs-3 mb-2"></i>
+                                <span>No activity recorded yet. Invites and membership changes will appear here.</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Team Membership Overview -->
-            <div class="row mb-4" th:if="${teamAccounts != null and !#lists.isEmpty(teamAccounts)}">
+            <div class="row mb-4" th:if="${teamAccounts != null and !#lists.isEmpty(teamAccounts) and canManageMembers}">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header d-flex align-items-center justify-content-between bg-white">
@@ -1311,7 +1857,7 @@
             </div>
 
             <!-- Invite Card -->
-            <div class="row mb-4 section">
+            <div class="row mb-4 section" th:if="${canInviteMembers}">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center py-3">
@@ -1371,16 +1917,8 @@
                                         </select>
                                     </div>
 
-                                    <!-- Account Field (target group) -->
-                                    <div class="col-md-3" th:if="${myAccounts != null and !#lists.isEmpty(myAccounts)}">
-                                        <label class="form-label fw-medium text-dark">Account</label>
-                                        <select class="form-select" name="accountId" required>
-                                            <option th:each="acc : ${myAccounts}" th:value="${acc.id}" th:text="${acc.name}"></option>
-                                        </select>
-                                    </div>
-
                                     <!-- Send Button -->
-                                    <div class="col-md-1 d-flex align-items-end">
+                                    <div class="col-md-2 d-flex align-items-end">
                                         <button class="btn btn-primary w-100" type="submit">
                                             <i class="bi bi-send me-2"></i>Send
                                         </button>
@@ -1569,165 +2107,42 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Ensure main content is not hidden behind sidebar
-  (function(){
-    function layoutSidebar(){
-      try {
-        const sidebar = document.querySelector('.sidebar');
-        const main = document.querySelector('.main-content');
-        if (!sidebar || !main) return;
-        const rect = sidebar.getBoundingClientRect();
-        const hidden = (sidebar.offsetParent === null) || rect.width === 0;
-        if (window.innerWidth >= 992 && !hidden) {
-          // desktop: give main area a left margin equal to sidebar width
-          main.style.marginLeft = rect.width + 'px';
-        } else {
-          // mobile or hidden sidebar
-          main.style.marginLeft = '0';
-        }
-      } catch(e) {}
-    }
-    window.addEventListener('resize', layoutSidebar);
-    document.addEventListener('DOMContentLoaded', layoutSidebar);
-    // Recompute after sidebar toggle clicks
-    const toggle = document.getElementById('sidebarToggle');
-    if (toggle) toggle.addEventListener('click', function(){ setTimeout(layoutSidebar, 200); });
-    
-    // Initial run
-    layoutSidebar();
-  })();
-</script>
-<script>
-  // Toggle sidebar on mobile (guard against missing elements)
-  (function() {
-      const menuToggle = document.querySelector('.menu-toggle');
-      const sidebar = document.querySelector('.sidebar');
-      const contentEl = document.querySelector('.content');
-      if (menuToggle && sidebar) {
-          menuToggle.addEventListener('click', function() {
-              sidebar.classList.toggle('show');
-              if (contentEl) contentEl.classList.toggle('expand');
-          });
-      }
-  })();
-</script>
-<script>
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.querySelector('.sidebar');
-            const menuToggle = document.querySelector('.menu-toggle');
-            const contentEl = document.querySelector('.content');
-            if (!sidebar || !menuToggle) return;
-            if (window.innerWidth < 992 &&
-                !sidebar.contains(event.target) &&
-                !menuToggle.contains(event.target)) {
-                sidebar.classList.remove('show');
-                if (contentEl) contentEl.classList.remove('expand');
-            }
-        });
-
-        // Bootstrap handles dropdowns via data attributes; no custom dropdown scripts needed
-
-        // Simple logout function that works with Spring Security
-        function performLogout() {
-            console.log('Logout initiated');
-            
-            // Show confirmation dialog
-            if (!confirm('Are you sure you want to sign out?')) {
-                console.log('User cancelled logout');
-                return;
-            }
-            
-            console.log('User confirmed logout');
-            
-            // Submit the hidden logout form if available, else fallback to dynamic form
-            const existing = document.getElementById('logoutForm');
-            if (existing) {
-                existing.submit();
-                return;
-            }
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/logout';
-            form.style.display = 'none';
-            const csrfToken = document.querySelector('meta[name="_csrf"]');
-            const csrfParam = document.querySelector('meta[name="_csrf_parameter"]');
-            if (csrfToken) {
-                const token = document.createElement('input');
-                token.type = 'hidden';
-                token.name = csrfParam ? csrfParam.content : '_csrf';
-                token.value = csrfToken.content;
-                form.appendChild(token);
-            }
-            document.body.appendChild(form);
-            form.submit();
-        }
-
-        // Backward-compatibility wrappers (if referenced elsewhere)
-        function performHeaderLogout() { performLogout(); }
-        function performSidebarLogout() { performLogout(); }
-
-        // Set up event listeners for all logout buttons/links
-        document.addEventListener('DOMContentLoaded', function() {
-            // Find all logout buttons/links and attach the handler
-            const logoutElements = document.querySelectorAll('[data-logout="true"]');
-            logoutElements.forEach(element => {
-                element.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    performLogout();
-                });
-            });
-        });
-    </script>
-    <!-- Invite Modal Fragment -->
-    <div th:replace="fragments/invite-modal :: invite-modal"></div>
     <script>
-      // Fallback: ensure clicking the header user button opens the profile modal
-      (function(){
-        try {
-          document.addEventListener('DOMContentLoaded', function(){
-            const btn = document.querySelector('[data-bs-target="#profileModal"]');
-            const modalEl = document.getElementById('profileModal');
-            if (!btn || !modalEl) return;
-            btn.addEventListener('click', function(){
-              // If Bootstrap is available use it
-              if (window.bootstrap && bootstrap.Modal) {
-                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        (function() {
+            if (!window.history || !window.history.pushState) {
                 return;
-              }
-              // Very basic manual show fallback
-              modalEl.style.display = 'block';
-              modalEl.classList.add('show');
-              const backdrop = document.createElement('div');
-              backdrop.className = 'modal-backdrop fade show';
-              document.body.appendChild(backdrop);
-              // Close on click of any [data-bs-dismiss="modal"]
-              modalEl.querySelectorAll('[data-bs-dismiss="modal"]').forEach(function(closeBtn){
-                closeBtn.addEventListener('click', function(){
-                  modalEl.classList.remove('show');
-                  modalEl.style.display = 'none';
-                  if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
-                });
-              });
+            }
+            const lockState = { dashboardLock: true };
+            history.replaceState(lockState, document.title, window.location.href);
+            history.pushState(lockState, document.title, window.location.href);
+            window.addEventListener('popstate', function(event) {
+                const state = event.state;
+                if (!state || !state.dashboardLock) {
+                    history.pushState(lockState, document.title, window.location.href);
+                    return;
+                }
+                history.pushState(lockState, document.title, window.location.href);
             });
-          });
-        } catch(e) { /* no-op */ }
-      })();
+        })();
     </script>
     <script>
-      // Bootstrap dropdown fallback init for user menu
-      (function(){
-        try {
-          document.addEventListener('DOMContentLoaded', function(){
-            if (window.bootstrap && document.getElementById('userMenuBtn')) {
-              new bootstrap.Dropdown(document.getElementById('userMenuBtn'));
-            }
-          });
-        } catch(e) { /* no-op */ }
-      })();
+        (function() {
+            document.addEventListener('click', function(event) {
+                const target = event.target.closest('[data-logout="true"]');
+                if (!target) {
+                    return;
+                }
+                if (!confirm('Are you sure you want to sign out?')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        })();
     </script>
-    <!-- Role-based UI gating: hide elements whose data-required-roles doesn't include activeRole -->
+    <script>
+        new bootstrap.Dropdown(document.getElementById('userMenuBtn'));
+    </script>
+{{ ... }}
     <script th:inline="javascript">
       (function(){
         try {
@@ -1742,4 +2157,104 @@
           });
         } catch(e) { /* no-op */ }
       })();
+    </script>
+    
+    <!-- Sign Now Document Modal -->
+    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentModalLabel">Document for Signature</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Document: <span id="documentName"></span></h6>
+                        <p class="mb-1">From: <span id="senderName"></span></p>
+                        <p class="text-muted small mb-0"><span id="senderEmail"></span></p>
+                        <p class="text-muted small">Sent: <span id="sentAt"></span></p>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="signDocumentBtn">Sign Document</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to load pending documents
+        function loadPendingDocuments() {
+            fetch('/api/documents/pending')
+                .then(response => response.json())
+                .then(documents => {
+                    const container = document.getElementById('pendingDocumentsList');
+                    const countBadge = document.getElementById('pendingCount');
+                    const signNowSection = document.getElementById('signNowSection');
+                    
+                    container.innerHTML = ''; // Clear existing items
+                    countBadge.textContent = documents.length;
+                    
+                    if (documents.length > 0) {
+                        signNowSection.style.display = 'block';
+                        
+                        documents.forEach(doc => {
+                            const item = document.createElement('a');
+                            item.href = '#';
+                            item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                            item.innerHTML = `
+                                <div>
+                                    <h6 class="mb-1">${doc.documentName}</h6>
+                                    <small class="text-muted">From: ${doc.senderName}</small>
+                                </div>
+                                <i class="bi bi-chevron-right"></i>
+                            `;
+                            
+                            item.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                showDocumentDetails(doc);
+                            });
+                            
+                            container.appendChild(item);
+                        });
+                    } else {
+                        signNowSection.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading pending documents:', error);
+                });
+        }
+        
+        // Function to show document details in modal
+        function showDocumentDetails(doc) {
+            document.getElementById('documentName').textContent = doc.documentName || 'Untitled Document';
+            document.getElementById('senderName').textContent = doc.senderName || 'Unknown Sender';
+            document.getElementById('senderEmail').textContent = doc.senderEmail || 'No email provided';
+            document.getElementById('sentAt').textContent = doc.sentAt ? new Date(doc.sentAt).toLocaleString() : 'Unknown date';
+            
+            // Set up sign button
+            const signBtn = document.getElementById('signDocumentBtn');
+            signBtn.onclick = function() {
+                // Add your signing logic here
+                alert('Redirecting to sign document: ' + doc.documentId);
+                // window.location.href = `/sign/${doc.documentId}`;
+            };
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('documentModal'));
+            modal.show();
+        }
+        
+        // Load pending documents when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only load if the sign now section exists
+            if (document.getElementById('signNowSection')) {
+                loadPendingDocuments();
+                
+                // Refresh every 30 seconds
+                setInterval(loadPendingDocuments, 30000);
+            }
+        });
     </script>

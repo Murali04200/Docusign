@@ -135,6 +135,7 @@
 
     <form id="sendForm" class="needs-validation" novalidate enctype="multipart/form-data" method="post" action="/send-signature/next">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="templateId" th:value="${templateId}" th:if="${templateId != null}">
 
         <div class="row g-4 equal">
 
@@ -162,11 +163,12 @@
                             </div>
 
                             <div class="d-grid gap-2">
-                                <label class="btn btn-outline-primary mb-0" for="documentInput">
-                                    <i class="bi bi-upload me-1"></i> Choose file
+                                <label class="btn btn-outline-primary mb-0" for="documentInput" id="chooseFileBtn">
+                                    <i class="bi bi-upload me-1"></i> <span th:text="${preloadedFile != null ? 'Change file' : 'Choose file'}">Choose file</span>
                                 </label>
                                 <input id="documentInput" type="file" name="document" class="form-control d-none"
-                                       accept="application/pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+                                       accept="application/pdf,.doc,.docx,.png,.jpg,.jpeg"
+                                       th:required="${preloadedFile == null}">
                                 <div class="form-text small-note mt-1">Max size: 20MB</div>
                                 <div class="invalid-feedback">Please select a document to continue.</div>
                             </div>
@@ -350,8 +352,34 @@
         perms.forEach(p => p.name = 'permission');
     });
 
-    // initialize
+    // Initialize
     resetPreview();
+
+    // Check if template is preloaded
+    const preloadedTemplate = /*[[${template}]]*/ null;
+    const isPreloaded = /*[[${preloadedFile}]]*/ false;
+
+    if (isPreloaded && preloadedTemplate) {
+        // Show template info in file preview
+        const templateName = /*[[${template.name}]]*/ 'Template';
+        const templateCategory = /*[[${template.category}]]*/ '';
+        const templateType = /*[[${template.fileType}]]*/ 'PDF';
+
+        fileNameEl.textContent = templateName;
+        fileDetailEl.innerHTML = '<span class="badge bg-success me-2">Template</span>' + templateCategory;
+
+        // Set appropriate icon based on file type
+        fileThumb.innerHTML = '';
+        if (templateType === 'PDF') {
+            fileThumb.innerHTML = '<i class="bi bi-file-earmark-pdf-fill fs-2 text-danger"></i>';
+        } else if (templateType === 'DOCX' || templateType === 'DOC') {
+            fileThumb.innerHTML = '<i class="bi bi-file-earmark-word-fill fs-2 text-primary"></i>';
+        } else if (templateType === 'XLSX' || templateType === 'XLS') {
+            fileThumb.innerHTML = '<i class="bi bi-file-earmark-excel-fill fs-2 text-success"></i>';
+        } else {
+            fileThumb.innerHTML = '<i class="bi bi-file-earmark-fill fs-2 text-muted"></i>';
+        }
+    }
 </script>
 </body>
 </html>

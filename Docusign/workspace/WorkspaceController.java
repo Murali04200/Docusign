@@ -46,15 +46,23 @@ public class WorkspaceController {
             email = oidc.getEmail();
         }
         String role = null;
+        Long currentUserId = null;
+        boolean isPersonalWorkspace = false;
         if (email != null) {
             var user = individualAccountRepository.findByEmail(email);
             if (user.isPresent()) {
-                var tm = teamMemberRepository.findByTeamIdAndUserId(accountId, user.get().getId());
-                if (tm.isEmpty()) {
-                    redirectAttributes.addFlashAttribute("message", "You are not a member of this team.");
-                    return "redirect:/dashboard";
+                currentUserId = user.get().getId();
+                isPersonalWorkspace = currentUserId != null && accountId.equals(currentUserId);
+                if (!isPersonalWorkspace && currentUserId != null) {
+                    var tm = teamMemberRepository.findByTeamIdAndUserId(accountId, currentUserId);
+                    if (tm.isEmpty()) {
+                        redirectAttributes.addFlashAttribute("message", "You are not a member of this team.");
+                        return "redirect:/dashboard";
+                    }
+                    role = tm.get().getRole();
+                } else if (isPersonalWorkspace) {
+                    role = "owner";
                 }
-                role = tm.get().getRole();
             }
         }
         request.getSession(true).setAttribute(ActiveAccountInterceptor.SESSION_KEY, accountId);

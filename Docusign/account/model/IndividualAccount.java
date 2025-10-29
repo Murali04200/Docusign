@@ -28,6 +28,13 @@ public class IndividualAccount {
     @Column(name = "name", nullable = false)
     private String name;
 
+    /**
+     * Personal account email - PRIVACY SENSITIVE
+     * This is the user's personal/primary email address.
+     * NEVER expose to other users in team contexts unless user explicitly shares it.
+     * Use PrivacyUtil.maskEmail() when displaying in multi-user contexts.
+     * See: com.example.Docusign.util.PrivacyUtil
+     */
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

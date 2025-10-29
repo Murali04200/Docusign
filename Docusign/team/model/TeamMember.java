@@ -2,7 +2,17 @@ package com.example.Docusign.team.model;
 
 import java.time.Instant;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "team_members",
@@ -33,8 +43,14 @@ public class TeamMember {
     @Column(name = "display_name")
     private String displayName;
 
+    /**
+     * User email snapshot - PRIVACY SENSITIVE
+     * This field contains personal account emails.
+     * When exposing to API/UI, use PrivacyUtil.maskEmail() unless viewer is owner/admin.
+     * See: com.example.Docusign.util.PrivacyUtil
+     */
     @Column(name = "email")
-    private String email; // user email snapshot
+    private String email; // user email snapshot - PRIVACY SENSITIVE
 
     @Column(name = "role", nullable = false)
     private String role = "member"; // 'owner','admin','member','viewer'

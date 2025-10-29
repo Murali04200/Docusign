@@ -4,6 +4,8 @@ import com.example.Docusign.account.dto.AccountResponse;
 import com.example.Docusign.account.model.AccountType;
 import com.example.Docusign.account.service.AccountService;
 import com.example.Docusign.model.DocumentRepository;
+import com.example.Docusign.model.Envelope;
+import com.example.Docusign.service.EnvelopeService;
 import com.example.Docusign.workspace.ActiveAccountInterceptor;
 import com.example.Docusign.account.repository.IndividualAccountRepository;
 import com.example.Docusign.account.model.IndividualAccount;
@@ -11,6 +13,7 @@ import com.example.Docusign.team.repository.TeamMemberRepository;
 import com.example.Docusign.team.repository.TeamRepository;
 import com.example.Docusign.team.model.TeamMember;
 import com.example.Docusign.team.model.Team;
+import com.example.Docusign.team.activity.TeamActivityService;
 import com.example.Docusign.invite.InviteToken;
 import com.example.Docusign.invite.InviteTokenRepository;
 import org.slf4j.Logger;
@@ -28,6 +31,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 @Controller
 public class HomeController {
@@ -40,17 +44,24 @@ public class HomeController {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final InviteTokenRepository inviteTokenRepository;
+    private final TeamActivityService teamActivityService;
+    private final EnvelopeService envelopeService;
+
     public HomeController(AccountService accountService, DocumentRepository documentRepository,
                           IndividualAccountRepository individualAccountRepository,
                           TeamMemberRepository teamMemberRepository,
                           TeamRepository teamRepository,
-                          InviteTokenRepository inviteTokenRepository) {
+                          InviteTokenRepository inviteTokenRepository,
+                          TeamActivityService teamActivityService,
+                          EnvelopeService envelopeService) {
         this.accountService = accountService;
         this.documentRepository = documentRepository;
         this.individualAccountRepository = individualAccountRepository;
         this.teamMemberRepository = teamMemberRepository;
         this.teamRepository = teamRepository;
         this.inviteTokenRepository = inviteTokenRepository;
+        this.teamActivityService = teamActivityService;
+        this.envelopeService = envelopeService;
     }
 
     @GetMapping("/")
@@ -61,6 +72,8 @@ public class HomeController {
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal OidcUser oidcUser, Model model, Authentication authentication) {
         logger.info("Accessing dashboard endpoint");
+
+        boolean teamViewActive = false;
 
         try {
             // Set user info in model
@@ -415,11 +428,13 @@ public class HomeController {
                 } catch (Exception ignored) {
                     model.addAttribute("activeTeamCode", null);
                 }
-                // Flag: true when a non-personal (team) workspace is active
-                boolean isTeamActive = activeAccountId != null
-                        && personal != null
-                        && !activeAccountId.equals(personal.getId());
+                boolean personalSelected = personal != null
+                        && activeAccountId != null
+                        && activeAccountId.equals(personal.getId());
+                // Flag: true when the active workspace is not the personal workspace
+                boolean isTeamActive = activeAccountId != null && !personalSelected;
                 model.addAttribute("isTeamActive", isTeamActive);
+                teamViewActive = isTeamActive;
 
                 // Compute active account name from Team table (so we don't show literal 'Personal Account')
                 String activeAccountName = null;
@@ -428,12 +443,14 @@ public class HomeController {
                         var teamOpt = teamRepository.findById(activeAccountId);
                         if (teamOpt.isPresent()) {
                             activeAccountName = teamOpt.get().getName();
-                        } else if (personal != null && activeAccountId.equals(personal.getId()) && currentUser != null) {
+                        } else if (personalSelected && currentUser != null) {
                             activeAccountName = currentUser.getName();
                         }
                     }
                 } catch (Exception ignored) {}
                 model.addAttribute("activeAccountName", activeAccountName);
+
+                String activeRole = null;
 
                 // Determine role in active team workspace from DB
                 try {
@@ -444,17 +461,43 @@ public class HomeController {
                         if (userOpt.isPresent()) uid = userOpt.get().getId();
                     }
                     if (uid != null && activeAccountId != null) {
-                        teamMemberRepository.findByTeamIdAndUserId(activeAccountId, uid)
-                                .ifPresent(m -> model.addAttribute("activeRole", m.getRole()));
-                        if (!model.containsAttribute("activeRole")) {
-                            model.addAttribute("activeRole", null);
-                        }
-                    } else {
-                        model.addAttribute("activeRole", null);
+                        activeRole = teamMemberRepository.findByTeamIdAndUserId(activeAccountId, uid)
+                                .map(TeamMember::getRole)
+                                .orElse(null);
                     }
                 } catch (Exception ex) {
-                    model.addAttribute("activeRole", null);
+                    activeRole = null;
                 }
+                model.addAttribute("activeRole", activeRole);
+
+                String normalizedRole = activeRole != null ? activeRole.toLowerCase(Locale.ROOT) : null;
+                boolean canManageMembers = isTeamActive && ("owner".equals(normalizedRole) || "admin".equals(normalizedRole));
+                boolean canSendDocuments = !isTeamActive || (normalizedRole == null || !"viewer".equals(normalizedRole));
+                boolean canInviteMembers = !isTeamActive || canManageMembers;
+                model.addAttribute("canManageMembers", canManageMembers);
+                model.addAttribute("canSendDocuments", canSendDocuments);
+                model.addAttribute("canInviteMembers", canInviteMembers);
+                model.addAttribute("hasLimitedAccess", isTeamActive && !canSendDocuments);
+
+                if (isTeamActive && activeAccountId != null) {
+                    var activities = teamActivityService.getRecentActivity(activeAccountId, 15);
+                    model.addAttribute("teamActivities", activities);
+                } else {
+                    model.addAttribute("teamActivities", List.of());
+                }
+
+                List<TeamMember> activeTeamMembers = List.of();
+                if (isTeamActive && activeAccountId != null) {
+                    try {
+                        var members = teamMemberRepository.findByTeamId(activeAccountId);
+                        if (members != null) {
+                            activeTeamMembers = members.stream()
+                                    .filter(tm -> tm != null && (tm.getStatus() == null || !"removed".equalsIgnoreCase(tm.getStatus())))
+                                    .toList();
+                        }
+                    } catch (Exception ignored) {}
+                }
+                model.addAttribute("activeTeamMembers", activeTeamMembers);
 
                 // Individual account code has been removed in the new schema.
 
@@ -474,6 +517,31 @@ public class HomeController {
                     var recent = documentRepository.findByAccountIdOrderByLastModifiedDesc(docsAccountId,
                             org.springframework.data.domain.PageRequest.of(0, 10));
                     model.addAttribute("recentDocuments", recent);
+
+                    // Load envelope statistics
+                    try {
+                        EnvelopeService.EnvelopeStats envelopeStats = envelopeService.getEnvelopeStats(docsAccountId);
+                        model.addAttribute("envelopeStats", envelopeStats);
+
+                        // Get recent envelopes
+                        List<Envelope> recentEnvelopes = envelopeService.getAllEnvelopes(docsAccountId)
+                                .stream()
+                                .limit(5)
+                                .toList();
+                        model.addAttribute("recentEnvelopes", recentEnvelopes);
+
+                        // Get action required envelopes
+                        List<Envelope> actionRequired = envelopeService.getActionRequired(docsAccountId)
+                                .stream()
+                                .limit(5)
+                                .toList();
+                        model.addAttribute("actionRequiredEnvelopes", actionRequired);
+                    } catch (Exception e) {
+                        logger.error("Failed to load envelope stats", e);
+                        model.addAttribute("envelopeStats", new EnvelopeService.EnvelopeStats());
+                        model.addAttribute("recentEnvelopes", List.of());
+                        model.addAttribute("actionRequiredEnvelopes", List.of());
+                    }
                 }
             } else {
                 model.addAttribute("myAccounts", List.of());
@@ -482,13 +550,16 @@ public class HomeController {
                 model.addAttribute("activeAccountId", null);
                 model.addAttribute("activeRole", null);
                 model.addAttribute("isTeamActive", false);
+                model.addAttribute("teamActivities", List.of());
+                model.addAttribute("activeTeamMembers", List.of());
+                teamViewActive = false;
             }
 
             model.addAttribute("notifications", notifications);
             model.addAttribute("notificationCount", notifications != null ? notifications.size() : 0);
 
             logger.info("Successfully prepared dashboard model");
-            return "dashboard";
+            return teamViewActive ? "team-dashboard" : "dashboard";
 
         } catch (Exception e) {
             logger.error("Error in dashboard endpoint", e);

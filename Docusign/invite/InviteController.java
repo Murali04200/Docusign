@@ -12,12 +12,16 @@ import com.example.Docusign.team.model.TeamMember;
 import com.example.Docusign.team.repository.TeamMemberRepository;
 import com.example.Docusign.team.repository.TeamRepository;
 import com.example.Docusign.team.model.Team;
+import com.example.Docusign.team.activity.TeamActivityService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,17 +39,20 @@ public class InviteController {
     private final IndividualAccountRepository individualAccountRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
+    private final TeamActivityService teamActivityService;
 
     public InviteController(InviteService inviteService,
                           AccountService accountService,
                           IndividualAccountRepository individualAccountRepository,
                           TeamMemberRepository teamMemberRepository,
-                          TeamRepository teamRepository) {
+                          TeamRepository teamRepository,
+                          TeamActivityService teamActivityService) {
         this.inviteService = inviteService;
         this.accountService = accountService;
         this.individualAccountRepository = individualAccountRepository;
         this.teamMemberRepository = teamMemberRepository;
         this.teamRepository = teamRepository;
+        this.teamActivityService = teamActivityService;
     }
 
     @PostMapping("/create")
@@ -75,6 +82,21 @@ public class InviteController {
 
             token.setAccountId(accountId);
             token = inviteService.save(token);
+
+            Long inviterAccountId = null;
+            if (inviterEmail != null) {
+                var inviterAccountOpt = individualAccountRepository.findByEmail(inviterEmail);
+                if (inviterAccountOpt.isPresent()) {
+                    inviterAccountId = inviterAccountOpt.get().getId();
+                }
+            }
+            String detail = "Invited " + fullName + " (" + email + ") as " + role;
+            teamActivityService.recordGeneric(accountId,
+                    inviterAccountId,
+                    inviterName,
+                    inviterEmail,
+                    "INVITE_SENT",
+                    detail);
 
             String baseUrl = request.getScheme() + "://" + request.getServerName()
                     + ((request.getServerPort() != 80 && request.getServerPort() != 443)
@@ -299,6 +321,14 @@ public class InviteController {
                 }
             } catch (Exception ignored) {}
             teamMemberRepository.save(member);
+
+            String activityDetail = "Accepted invite with role " + member.getRole();
+            teamActivityService.recordGeneric(teamId,
+                    member.getUserId(),
+                    member.getDisplayName(),
+                    member.getEmail(),
+                    "INVITE_ACCEPTED",
+                    activityDetail);
         }
 
         // Mark invite accepted and notify inviter

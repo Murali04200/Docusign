@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Team Workspace</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+              integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw=="
+              crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+        <meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+        <meta name="activeAccountId" th:content="${activeAccountId}">
+        <meta name="activeAccountName" th:content="${activeAccountName}">
+        <meta name="activeTeamCode" th:content="${activeTeamCode}">
+        <style>
+            :root {
+                --primary: #5b8cff;
+                --primary-dark: #3056d3;
+                --secondary: #8e9bb0;
+                --success: #22c55e;
+                --info: #06b6d4;
+                --warning: #f59e0b;
+                --danger: #ef4444;
+                --light: #f8fafc;
+                --dark: #0f172a;
+                --nav-bg: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+                --nav-text: #e2e8f0;
+                --sidebar-width: 250px;
+                --header-height: 70px;
+                --border-radius: 1rem;
+                --glass-bg: rgba(255, 255, 255, 0.12);
+                --glass-border: rgba(255, 255, 255, 0.25);
+                --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+                --box-shadow: 0 10px 20px rgba(0,0,0,.08);
+                --box-shadow-lg: 0 30px 60px rgba(0,0,0,.18);
+                --gradient-card-1: 91, 140, 255;
+                --gradient-card-2: 139, 92, 246;
+                --gradient-card-3: 45, 212, 191;
+            }
+
+            @media (min-width: 992px) {
+                .main-content {
+                    margin-left: var(--sidebar-width) !important;
+                }
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                position: relative;
+                min-height: 100vh;
+                overflow-x: hidden;
+                font-family: 'Inter', sans-serif;
+            }
+
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                background: url('https://static.vecteezy.com/system/resources/thumbnails/019/155/428/small/colorful-gradient-abstract-background-colorful-pastel-design-vector.jpg') no-repeat center center / cover;
+                filter: blur(8px) brightness(0.9);
+                z-index: -1;
+            }
+
+            .main-wrapper {
+                display: flex;
+                min-height: 100vh;
+            }
+            .sidebar {
+                
+            width: var(--sidebar-width);
+            background: var(--nav-bg);
+            color: var(--nav-text);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(91, 140, 255, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+                }
+                
+                /* Hide scrollbar for Chrome, Safari and Opera */
+                .card::-webkit-scrollbar {
+                    display: none !important;
+                }
+            
+            .sidebar::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+                pointer-events: none;
+                z-index: -1;
+            }
+
+            .sidebar .logo {
+                padding: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #fff;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(8px);
+                position: relative;
+                z-index: 1;
+            }
+            
+            .sidebar .logo::after {
+                content: '';
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            }
+
+            .sidebar .logo i {
+                font-size: 1.5rem;
+            }
+
+            .sidebar .nav {
+                padding: 1rem 0;
+            }
+
+            .sidebar .nav-link {
+                color: var(--nav-text);
+                padding: 0.75rem 1.5rem;
+                margin: 0.25rem 0.5rem;
+                border-radius: var(--border-radius);
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                transition: all 0.25s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .sidebar .nav-link::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(90deg, rgba(91, 140, 255, 0), rgba(91, 140, 255, 0.1), rgba(91, 140, 255, 0));
+                transform: translateX(-100%);
+                transition: transform 0.6s ease;
+                z-index: -1;
+            }
+
+            .sidebar .nav-link:hover,
+            .sidebar .nav-link.active {
+                background: rgba(255, 255, 255, 0.12);
+                color: white;
+                text-decoration: none;
+                box-shadow: 0 4px 15px rgba(91, 140, 255, 0.15);
+            }
+            
+            .sidebar .nav-link:hover::before,
+            .sidebar .nav-link.active::before {
+                transform: translateX(0%);
+            }
+            
+            .sidebar .nav-link i {
+                transition: transform 0.3s ease, text-shadow 0.3s ease;
+            }
+            
+            .sidebar .nav-link:hover i {
+                transform: translateX(3px);
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+            }
+
+            .sidebar .nav-link.logout {
+                color: #f56565;
+            }
+
+            .main-content {
+                flex: 1;
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .navbar-brand-center {
+                font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+                font-weight: 700;
+                font-size: 1.75rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #ffffff;
+                text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            }
+
+            .stats-card,
+            .action-card {
+                border-radius: 0.9rem;
+                overflow: hidden;
+                box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+                transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                            box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            }
+
+            .glossy {
+                position: relative;
+                background: linear-gradient(140deg,
+                        rgba(var(--gradient-card-1), 0.35) 0%,
+                        rgba(var(--gradient-card-2), 0.32) 45%,
+                        rgba(var(--gradient-card-3), 0.38) 100%);
+                border: 1px solid rgba(255, 255, 255, 0.35);
+                backdrop-filter: blur(14px);
+                transform-style: preserve-3d;
+            }
+
+            .glossy::before,
+            .glossy::after {
+                content: "";
+                position: absolute;
+                pointer-events: none;
+            }
+
+            .glossy::before {
+                inset: -35% 10% 55% -45%;
+                background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.1) 55%, transparent 80%);
+                opacity: 0;
+                transition: opacity 0.45s ease;
+            }
+
+            .glossy::after {
+                content: none !important;
+                animation: none !important;
+            }
+
+            .glossy:hover {
+                transform: none !important;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                border-color: rgba(255, 255, 255, 0.55);
+            }
+
+            .glossy:hover::before {
+                opacity: 1;
+            }
+
+            .glossy:hover::after {
+                animation-duration: 4.5s;
+            }
+
+            .action-card {
+                height: auto !important;
+                min-height: 100%;
+                max-height: none !important;
+                display: flex;
+                flex-direction: column;
+                overflow: visible !important;
+                transform: none !important;
+                will-change: unset !important;
+                contain: unset !important;
+                -ms-overflow-style: none !important;
+                scrollbar-width: none !important;
+            }
+
+            .action-card .card-header {
+                padding: 1.5rem 1.75rem;
+                background: rgba(255, 255, 255, 0.7);
+                border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .action-card .card-body {
+                padding: 2.25rem;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .docu-card-body {
+                position: relative;
+                padding: 2.25rem;
+                border-radius: calc(var(--border-radius) * 0.7);
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                -ms-overflow-style: none !important;
+                scrollbar-width: none !important;
+            }
+
+            .docu-card-body .card-hero {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .docu-card-body .card-hero .badge {
+                font-size: 0.65rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                font-weight: 600;
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.15) 100%);
+                color: var(--dark);
+                border: 1px solid rgba(255, 255, 255, 0.35);
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+            }
+
+            .docu-card-body .card-heading h5 {
+                margin-bottom: 0.35rem;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }
+
+            .docu-card-body .card-heading p {
+                margin-bottom: 0;
+                color: rgba(15, 23, 42, 0.7);
+                font-size: 0.9rem;
+                line-height: 1.55;
+            }
+
+            .docu-card-body .card-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.6rem;
+            }
+
+            .docu-card-body .card-tags .badge {
+                font-size: 0.7rem;
+                letter-spacing: 0.04em;
+                font-weight: 500;
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 100%);
+                color: var(--dark);
+                border: 1px solid rgba(255, 255, 255, 0.28);
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            }
+
+            .docu-card-body .card-cta {
+                margin-top: auto;
+            }
+
+            .btn-cta-gradient {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.6rem 1.6rem;
+                border-radius: 999px;
+                border: none;
+                color: #fff !important;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                background-image: linear-gradient(120deg,
+                        rgba(var(--gradient-card-1), 0.95) 0%,
+                        rgba(var(--gradient-card-2), 0.95) 48%,
+                        rgba(var(--gradient-card-3), 0.95) 100%);
+                background-size: 220% 220%;
+                box-shadow: 0 14px 32px rgba(var(--gradient-card-1), 0.35);
+                transition: transform 0.35s ease, box-shadow 0.35s ease, background-position 0.6s ease;
+                overflow: hidden;
+            }
+
+            .btn-cta-gradient::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.55), transparent 65%);
+                opacity: 0;
+                transition: opacity 0.35s ease;
+            }
+
+            .btn-cta-gradient:hover,
+            .btn-cta-gradient:focus {
+                background-position: 90% 50%;
+                transform: translateY(-3px);
+                box-shadow: 0 18px 36px rgba(var(--gradient-card-2), 0.35);
+                color: #fff;
+            }
+
+            .btn-cta-gradient:hover::after,
+            .btn-cta-gradient:focus::after {
+                opacity: 0.35;
+            }
+
+            .btn-cta-gradient:active {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 18px rgba(var(--gradient-card-3), 0.4);
+            }
+
+            .icon-wrapper {
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+                position: relative;
+                overflow: hidden;
+                transition: transform 0.45s ease, box-shadow 0.45s ease;
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+                border: 1px solid rgba(255, 255, 255, 0.28);
+                --icon-glow: rgba(93, 135, 255, 0.3);
+            }
+
+            .icon-wrapper::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.65), transparent 55%);
+                opacity: 0;
+                transition: opacity 0.45s ease;
+            }
+
+            .icon-wrapper i {
+                color: inherit;
+                text-shadow: 0 4px 18px rgba(15, 23, 42, 0.45),
+                             0 0 14px rgba(255, 255, 255, 0.55);
+                filter: drop-shadow(0 6px 18px rgba(91, 140, 255, 0.35));
+                transition: filter 0.35s ease, text-shadow 0.35s ease;
+            }
+
+            .glossy:hover .icon-wrapper {
+                transform: translateY(-6px) scale(1.06);
+                box-shadow: 0 15px 30px var(--icon-glow, rgba(13, 110, 253, 0.25));
+            }
+
+            .glossy:hover .icon-wrapper::after {
+                opacity: 1;
+            }
+
+            .glossy .icon-wrapper i {
+                font-size: 1.65rem;
+                animation: iconPulse 4.5s ease-in-out infinite;
+            }
+
+            .glossy:hover .icon-wrapper i {
+                animation-duration: 2.2s;
+                filter: drop-shadow(0 8px 24px rgba(91, 140, 255, 0.45));
+                text-shadow: 0 6px 20px rgba(15, 23, 42, 0.55),
+                             0 0 18px rgba(255, 255, 255, 0.65);
+            }
+
+            .icon-wrapper.primary {
+                background: linear-gradient(135deg, rgba(91, 140, 255, 0.95) 0%, rgba(139, 92, 246, 0.9) 55%, rgba(59, 130, 246, 0.88) 100%);
+                color: #ffffff;
+                --icon-glow: rgba(91, 140, 255, 0.4);
+            }
+
+            .icon-wrapper.success {
+                background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(16, 185, 129, 0.9) 50%, rgba(45, 212, 191, 0.88) 100%);
+                color: #ffffff;
+                --icon-glow: rgba(16, 185, 129, 0.42);
+            }
+
+            .icon-wrapper.info {
+                background: linear-gradient(135deg, rgba(6, 182, 212, 0.96) 0%, rgba(14, 165, 233, 0.9) 50%, rgba(56, 189, 248, 0.88) 100%);
+                color: #ffffff;
+                --icon-glow: rgba(14, 165, 233, 0.4);
+            }
+
+            .icon-wrapper.warning {
+                background: linear-gradient(135deg, rgba(249, 115, 22, 0.96) 0%, rgba(234, 179, 8, 0.9) 48%, rgba(250, 204, 21, 0.86) 100%);
+                color: #fffef2;
+                --icon-glow: rgba(249, 115, 22, 0.38);
+            }
+
+            .icon-wrapper.secondary {
+                background: linear-gradient(135deg, rgba(148, 163, 184, 0.95) 0%, rgba(100, 116, 139, 0.9) 52%, rgba(148, 163, 184, 0.85) 100%);
+                color: #ffffff;
+                --icon-glow: rgba(100, 116, 139, 0.36);
+            }
+
+            @keyframes sheen {
+                0% {
+                    transform: translate3d(0, 0, 0) rotate(30deg);
+                    opacity: 0;
+                }
+                30% {
+                    opacity: 0.45;
+                }
+                45% {
+                    transform: translate3d(160%, 20%, 0) rotate(30deg);
+                    opacity: 0.2;
+                }
+                60% {
+                    opacity: 0;
+                }
+                100% {
+                    transform: translate3d(0, 0, 0) rotate(30deg);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes iconPulse {
+                0%, 100% {
+                    transform: scale(1) translateZ(0);
+                    text-shadow: 0 0 0 rgba(93, 135, 255, 0.45);
+                }
+                50% {
+                    transform: scale(1.12) translateZ(0);
+                    text-shadow: 0 8px 22px rgba(93, 135, 255, 0.35);
+                }
+            }
+
+            .team-activity .list-group-item {
+                border: none;
+                border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            @media (max-width: 991.98px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+                .sidebar.show {
+                    transform: translateX(0);
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                }
+                .main-content {
+                    margin-left: 0;
+                    width: 100%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="bi bi-file-earmark-lock-fill"></i>
+                <span>DocuSign</span>
+            </div>
+            <div class="nav flex-column">
+                <a href="/dashboard" class="nav-link active">
+                    <i class="bi bi-house-door"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/groups" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Groups</span>
+                </a>
+                <a href="/reports" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="/logout" class="nav-link logout" data-logout="true">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+        <div class="main-content">
+            <header class="app-header sticky-top" style="z-index:1040;">
+                <nav class="navbar navbar-expand-lg shadow-sm" style="background: linear-gradient(90deg,#0d6efd,#6610f2);">
+                    <div class="container-fluid py-2 px-3">
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-light d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#workspaceModal">
+                                <i class="bi bi-hdd-network me-2"></i>
+                                <span>Switch Workspace</span>
+                            </button>
+                        </div>
+                        <div class="flex-grow-1 d-none d-sm-flex flex-column align-items-center justify-content-center text-center">
+                            <span class="navbar-brand-center" th:text="${activeAccountName != null ? activeAccountName : 'Team Workspace'}">Team Workspace</span>
+                            <small class="text-white-50" th:text="${activeAccountName != null ? 'Team workspace' : 'Workspace'}">Team workspace</small>
+                        </div>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            <div class="dropdown me-2">
+                                <button class="btn btn-light btn-sm rounded-circle position-relative d-flex align-items-center justify-content-center" type="button" id="notifBtn" data-bs-toggle="dropdown" aria-expanded="false" style="width:34px;height:34px;">
+                                    <i class="bi bi-bell"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" th:if="${notificationCount > 0}" th:text="${notificationCount > 9 ? '9+' : notificationCount}">0</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifBtn" style="min-width:320px; max-height:340px; overflow-y:auto;">
+                                    <li class="dropdown-header small text-muted d-flex justify-content-between align-items-center">
+                                        <span>Notifications</span>
+                                        <span class="badge bg-primary" th:text="${notificationCount}">0</span>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li th:if="${#lists.isEmpty(notifications)}">
+                                        <span class="dropdown-item small text-muted">No notifications yet</span>
+                                    </li>
+                                    <li th:each="n : ${notifications}">
+                                        <div class="dropdown-item small">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-2">
+                                                    <i class="bi" th:classappend="${n.status} == 'accepted' ? ' bi-check-circle-fill text-success' : (${n.status} == 'completed' ? ' bi-send-check-fill text-primary' : ' bi-envelope-fill text-warning')"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold" th:text="${n.message}">Notification message</div>
+                                                    <div class="text-muted" th:text="${n.detail}" th:if="${n.detail != null}" style="font-size:0.75rem;"></div>
+                                                    <div class="text-muted" style="font-size:0.7rem;" th:text="${#temporals.format(n.timestamp, 'dd MMM yyyy, hh:mm a')}">Time</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-pill d-flex align-items-center px-2 dropdown-toggle" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="avatar me-2">
+                                        <span th:text="${name != null ? #strings.toUpperCase(name.substring(0,1)) : 'U'}">U</span>
+                                    </div>
+                                    <span class="d-none d-md-inline fw-medium" th:text="${name != null ? name : username}">User</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuBtn">
+                                    <li class="px-3 py-2">
+                                        <div class="fw-semibold" th:text="${name != null ? name : username}">User Name</div>
+                                        <div class="small text-muted">Team Code: <code th:text="${activeTeamCode}">TEAM-CODE</code></div>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/logout" data-logout="true">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <div class="content container pt-4 pb-4">
+                <div class="alert alert-warning d-flex align-items-center mb-4" role="alert" th:if="${hasLimitedAccess}">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    <div>Limited access: some actions are disabled for your current role in this workspace.</div>
+                </div>
+
+                <div class="row g-4 mb-4" style="overflow-x:hidden;" th:if="${canSendDocuments}">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 glossy animate__animated animate__fadeInUp">
+                            <div class="card-body docu-card-body">
+                                <div class="card-hero d-flex align-items-center justify-content-between">
+                                    <div class="icon-wrapper primary animate__animated animate__pulse animate__infinite">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </div>
+                                    <span class="badge rounded-pill px-3 py-2">Quick sign</span>
+                                </div>
+                                <div class="card-heading">
+                                    <h5 class="fw-semibold mb-1">Sign a Document</h5>
+                                    <p class="small mb-0">Upload and complete a document right away with an elevated signing experience.</p>
+                                </div>
+                                <div class="card-tags">
+                                    <span class="badge rounded-pill px-3 py-2">Drag &amp; drop</span>
+                                    <span class="badge rounded-pill px-3 py-2">Self sign</span>
+                                </div>
+                                <div class="card-cta d-grid">
+                                    <a href="/sign" class="btn btn-cta-gradient btn-sm">Sign Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 glossy animate__animated animate__fadeInUp animate__delay-1s">
+                            <div class="card-body docu-card-body">
+                                <div class="card-hero d-flex align-items-center justify-content-between">
+                                    <div class="icon-wrapper info animate__animated animate__pulse animate__delay-1s animate__infinite">
+                                        <i class="bi bi-send-check"></i>
+                                    </div>
+                                    <span class="badge rounded-pill px-3 py-2">Smart routing</span>
+                                </div>
+                                <div class="card-heading">
+                                    <h5 class="fw-semibold mb-1">Send for Signature</h5>
+                                    <p class="small mb-0">Share packages with teammates, collect signatures, and track progress in real time.</p>
+                                </div>
+                                <div class="card-tags">
+                                    <span class="badge rounded-pill px-3 py-2">Bulk send</span>
+                                    <span class="badge rounded-pill px-3 py-2">Role-based</span>
+                                </div>
+                                <div class="card-cta d-grid">
+                                    <a href="/send-signature" class="btn btn-cta-gradient btn-sm">Start Request</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4" th:if="${!canSendDocuments}">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm glossy text-center py-5">
+                            <div class="card-body">
+                                <i class="bi bi-eye-slash-fill fs-1 text-warning mb-3 animate__animated animate__flash animate__slow animate__infinite"></i>
+                                <h5 class="fw-semibold">Viewer access</h5>
+                                <p class="text-muted mb-0">Upgrade your role or contact a workspace admin to send or manage signature requests.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card action-card glossy animate__animated animate__fadeInUp animate__delay-1s">
+                            <div class="card-body docu-card-body">
+                                <div class="card-hero d-flex align-items-center justify-content-between">
+                                    <div class="icon-wrapper info animate__animated animate__pulse animate__infinite">
+                                        <i class="bi bi-journal-text"></i>
+                                    </div>
+                                    <span class="badge rounded-pill px-3 py-2">Shared</span>
+                                </div>
+                                <div class="card-heading">
+                                    <h5 class="fw-semibold mb-2">Templates</h5>
+                                    <p class="small mb-0">Launch agreements faster with curated team templates ready to personalize.</p>
+                                </div>
+                                <div class="card-tags">
+                                    <span class="badge rounded-pill px-3 py-2">Reusable</span>
+                                    <span class="badge rounded-pill px-3 py-2">Pre-filled</span>
+                                </div>
+                                <div class="card-cta d-grid">
+                                    <a href="/templates" class="btn btn-cta-gradient btn-sm">View Templates</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card action-card glossy animate__animated animate__fadeInUp animate__delay-2s">
+                            <div class="card-body docu-card-body">
+                                <div class="card-hero d-flex align-items-center justify-content-between">
+                                    <div class="icon-wrapper secondary animate__animated animate__pulse animate__delay-1s animate__infinite">
+                                        <i class="bi bi-folder2-open"></i>
+                                    </div>
+                                    <span class="badge rounded-pill px-3 py-2">Organized</span>
+                                </div>
+                                <div class="card-heading">
+                                    <h5 class="fw-semibold mb-2">Documents</h5>
+                                    <p class="small mb-0">Browse workspace folders, audit updates, and keep envelopes at your fingertips.</p>
+                                </div>
+                                <div class="card-tags">
+                                    <span class="badge rounded-pill px-3 py-2">Filtered</span>
+                                    <span class="badge rounded-pill px-3 py-2">Versioned</span>
+                                </div>
+                                <div class="card-cta d-grid">
+                                    <a href="/documents" class="btn btn-cta-gradient btn-sm">Open Documents</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card action-card glossy animate__animated animate__fadeInUp animate__delay-3s">
+                            <div class="card-body docu-card-body">
+                                <div class="card-hero d-flex align-items-center justify-content-between">
+                                    <div class="icon-wrapper warning animate__animated animate__pulse animate__delay-2s animate__infinite">
+                                        <i class="bi bi-bar-chart"></i>
+                                    </div>
+                                    <span class="badge rounded-pill px-3 py-2">Insights</span>
+                                </div>
+                                <div class="card-heading">
+                                    <h5 class="fw-semibold mb-2">Reports</h5>
+                                    <p class="small mb-0">Analyze performance metrics and unlock visibility across every signature journey.</p>
+                                </div>
+                                <div class="card-tags">
+                                    <span class="badge rounded-pill px-3 py-2">Trends</span>
+                                    <span class="badge rounded-pill px-3 py-2">Exports</span>
+                                </div>
+                                <div class="card-cta d-grid">
+                                    <a href="/reports" class="btn btn-cta-gradient btn-sm">View Reports</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4" th:if="${teamActivities != null}">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm team-activity">
+                            <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-wrapper secondary me-3" style="width:48px;height:48px;border-radius:12px;">
+                                        <i class="bi bi-activity"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-semibold">Team Activity</h5>
+                                        <small class="text-muted">Latest actions in this workspace</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" th:if="${teamActivities != null and !teamActivities.isEmpty()}">
+                                    <div class="list-group-item d-flex align-items-center" th:each="activity : ${teamActivities}">
+                                        <div class="me-3 text-primary">
+                                            <i class="bi bi-circle-fill" style="font-size:8px;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold text-uppercase small" th:text="${activity.actionType}">INVITE_SENT</div>
+                                            <div class="small text-muted" th:text="${activity.detail}">Detail</div>
+                                            <div class="small text-muted" th:text="${activity.actorDisplayName != null ? activity.actorDisplayName : activity.actorEmail}">Actor</div>
+                                        </div>
+                                        <div class="text-muted small" th:text="${#temporals.format(activity.createdAt, 'dd MMM yyyy, hh:mm a')}">Time</div>
+                                    </div>
+                                </div>
+                                <div class="p-4 text-center text-muted" th:if="${teamActivities == null or teamActivities.isEmpty()}">
+                                    <i class="bi bi-body-text d-block fs-3 mb-2"></i>
+                                    <span>No activity recorded yet. Invites and membership changes will appear here.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4" th:if="${activeTeamMembers != null}">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-wrapper success me-3" style="width:48px;height:48px;border-radius:12px;">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-semibold">Team Members</h5>
+                                        <small class="text-muted">People with access to this workspace</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" th:if="${activeTeamMembers != null and !activeTeamMembers.isEmpty()}">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Email</th>
+                                                <th scope="col">Role</th>
+                                                <th scope="col" class="text-end">Joined</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="member : ${activeTeamMembers}">
+                                                <td>
+                                                    <div class="fw-semibold" th:text="${member.displayName}">Member Name</div>
+                                                </td>
+                                                <td th:text="${member.email}">email@example.com</td>
+                                                <td>
+                                                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary text-uppercase" th:text="${member.role}">ROLE</span>
+                                                </td>
+                                                <td class="text-end" th:text="${member.joinedAt != null ? #temporals.format(member.joinedAt, 'dd MMM yyyy') : '-'}">01 Jan 2025</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="p-4 text-center text-muted" th:if="${activeTeamMembers == null or activeTeamMembers.isEmpty()}">
+                                    <i class="bi bi-people d-block fs-3 mb-2"></i>
+                                    <span>No members to display for this team yet.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="workspaceModal" tabindex="-1" aria-labelledby="workspaceModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="workspaceModalLabel">Switch Workspace</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="/workspace/switch">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="mb-3">
+                                <label class="form-label">Select Workspace</label>
+                                <select class="form-select" name="accountId" required>
+                                    <option th:each="acc : ${myAccounts}" th:value="${acc.id}"
+                                            th:text="${acc.type != null and acc.type.name() == 'INDIVIDUAL' ? 'Personal - ' + acc.name : 'Team - ' + acc.name}"></option>
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Switch</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script th:if="${isTeamActive}">
+            (function() {
+                if (!window.history || !window.history.pushState) {
+                    return;
+                }
+                const lockState = { dashboardLock: true };
+                history.pushState(lockState, document.title, window.location.href);
+                window.addEventListener('popstate', function(event) {
+                    const state = event.state;
+                    if (!state || !state.dashboardLock) {
+                        history.pushState(lockState, document.title, window.location.href);
+                    } else {
+                        history.pushState(lockState, document.title, window.location.href);
+                    }
+                });
+            })();
+        </script>
+        <script>
+            (function() {
+                document.addEventListener('click', function(event) {
+                    const target = event.target.closest('[data-logout="true"]');
+                    if (!target) {
+                        return;
+                    }
+                    if (!confirm('Are you sure you want to sign out?')) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                });
+            })();
+        </script>
+    </body>
+</html>
